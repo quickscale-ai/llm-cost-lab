@@ -1,0 +1,44 @@
+# Agent exécuteur.
+#
+# Mode interactif : pas d'entrée `prompt`, donc l'action attend la phrase
+# `@claude` dans une issue ou un commentaire avant de se déclencher.
+#
+# `github_token` n'est volontairement PAS fourni : l'action s'authentifie alors
+# comme la GitHub App Claude, ce qui permet aux workflows CI et de revue de se
+# déclencher sur les commits qu'elle pousse. Avec le GITHUB_TOKEN par défaut,
+# GitHub bloque ces déclenchements en cascade et la PR de l'agent n'aurait
+# ni CI ni revue.
+name: Agent exécuteur
+
+on:
+  issues:
+    types: [opened, assigned]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  execute:
+    # Ne démarre que si `@claude` est mentionné quelque part dans le déclencheur.
+    if: |
+      contains(github.event.comment.body, '@claude') ||
+      contains(github.event.issue.body, '@claude') ||
+      contains(github.event.issue.title, '@claude')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+          claude_args: '--model claude-opus-5 --max-turns 30'

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Types, tests et build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci --legacy-peer-deps
+
+      - name: Vérifier les types
+        run: npm run typecheck
+
+      - name: Lancer les tests
+        run: npm run test
+
+      - name: Construire le bundle
+        run: npm run build
+
+      - name: Vérifier le budget de poids (100 Ko gzip)
+        run: |
+          BYTES=$(cat dist/assets/*.js | gzip -c | wc -c | tr -d ' ')
+          LIMIT=102400
+          echo "Bundle JS : ${BYTES} octets gzip (limite ${LIMIT})"
+          if [ "$BYTES" -gt "$LIMIT" ]; then
+            echo "::error::Le bundle dépasse le budget de 100 Ko gzip."
+            exit 1
+          fi
