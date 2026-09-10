@@ -39,7 +39,7 @@ function CostBar({ ratio }: { ratio: number }) {
   return (
     <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
       <div
-        className="h-full rounded-full bg-brand-500"
+        className="h-full rounded-full bg-brand-600 dark:bg-brand-500"
         style={{ width: `${Math.max(ratio * 100, ratio > 0 ? 2 : 0)}%` }}
       />
     </div>
