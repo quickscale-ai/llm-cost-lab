@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { costForTokens, computeCost, rankByCost, maxTotalCost, computeSavings } from '../pricing'
+import {
+  costForTokens,
+  computeCost,
+  rankByCost,
+  maxTotalCost,
+  computeSavings,
+  totalCalls,
+  agenticToUsage,
+  costPerTask,
+} from '../pricing'
 import type { Model } from '../../data/models'
 
 const opus: Model = {
@@ -109,5 +118,59 @@ describe('computeSavings', () => {
   it('retourne 0 quand tous les coûts sont nuls (volume zéro)', () => {
     const ranked = rankByCost([opus, haiku], { inputTokens: 0, outputTokens: 0 })
     expect(computeSavings(ranked)).toBe(0)
+  })
+})
+
+describe('totalCalls', () => {
+  it('multiplie les tâches par les itérations', () => {
+    expect(totalCalls({ tasks: 50, iterationsPerTask: 10, inputTokensPerCall: 0, outputTokensPerCall: 0 })).toBe(500)
+  })
+
+  it("retourne 0 si l'un des facteurs est nul", () => {
+    expect(totalCalls({ tasks: 0, iterationsPerTask: 10, inputTokensPerCall: 0, outputTokensPerCall: 0 })).toBe(0)
+    expect(totalCalls({ tasks: 50, iterationsPerTask: 0, inputTokensPerCall: 0, outputTokensPerCall: 0 })).toBe(0)
+  })
+
+  it('ramène les entrées négatives à 0', () => {
+    expect(totalCalls({ tasks: -5, iterationsPerTask: 10, inputTokensPerCall: 0, outputTokensPerCall: 0 })).toBe(0)
+  })
+})
+
+describe('agenticToUsage', () => {
+  it('calcule le volume total de tokens', () => {
+    const usage = agenticToUsage({
+      tasks: 50,
+      iterationsPerTask: 10,
+      inputTokensPerCall: 8_000,
+      outputTokensPerCall: 1_500,
+    })
+    // 50 × 10 = 500 appels → 500 × 8 000 = 4 000 000 entrée, 500 × 1 500 = 750 000 sortie
+    expect(usage.inputTokens).toBe(4_000_000)
+    expect(usage.outputTokens).toBe(750_000)
+  })
+
+  it('retourne un usage nul si les tâches sont à 0', () => {
+    const usage = agenticToUsage({
+      tasks: 0,
+      iterationsPerTask: 10,
+      inputTokensPerCall: 8_000,
+      outputTokensPerCall: 1_500,
+    })
+    expect(usage.inputTokens).toBe(0)
+    expect(usage.outputTokens).toBe(0)
+  })
+})
+
+describe('costPerTask', () => {
+  it('divise le coût total par le nombre de tâches', () => {
+    expect(costPerTask(100, 50)).toBe(2)
+  })
+
+  it('retourne 0 si le nombre de tâches est nul', () => {
+    expect(costPerTask(100, 0)).toBe(0)
+  })
+
+  it('retourne 0 si le nombre de tâches est négatif', () => {
+    expect(costPerTask(100, -10)).toBe(0)
   })
 })

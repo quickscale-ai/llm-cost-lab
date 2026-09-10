@@ -1,20 +1,31 @@
 import { useMemo, useState } from 'react'
 import type { Provider } from './data/models'
 import { MODELS, PROVIDERS, PRICING_VERIFIED_AT, FX_RATE_DATE, USD_TO_XOF } from './data/models'
-import type { Usage } from './lib/pricing'
-import { rankByCost } from './lib/pricing'
+import type { Usage, AgenticParams } from './lib/pricing'
+import { rankByCost, agenticToUsage, totalCalls } from './lib/pricing'
 import type { Currency } from './lib/format'
 import { formatDate, formatTokens } from './lib/format'
 import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
 import { VolumeSimulator } from './components/VolumeSimulator'
+import { AgenticSimulator } from './components/AgenticSimulator'
 import { PricingTable } from './components/PricingTable'
 import { BestValueCard } from './components/BestValueCard'
 
+type SimMode = 'volume' | 'agentic'
+
 const DEFAULT_USAGE: Usage = { inputTokens: 1_000_000, outputTokens: 200_000 }
+const DEFAULT_AGENTIC: AgenticParams = {
+  tasks: 50,
+  iterationsPerTask: 10,
+  inputTokensPerCall: 8_000,
+  outputTokensPerCall: 1_500,
+}
 
 export default function App() {
+  const [mode, setMode] = useState<SimMode>('volume')
   const [usage, setUsage] = useState<Usage>(DEFAULT_USAGE)
+  const [agenticParams, setAgenticParams] = useState<AgenticParams>(DEFAULT_AGENTIC)
   const [currency, setCurrency] = useState<Currency>('USD')
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
   const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
@@ -24,7 +35,8 @@ export default function App() {
     return MODELS.filter((model) => selectedProviders.has(model.provider))
   }, [selectedProviders])
 
-  const breakdowns = useMemo(() => rankByCost(visibleModels, usage), [visibleModels, usage])
+  const activeUsage = mode === 'agentic' ? agenticToUsage(agenticParams) : usage
+  const breakdowns = useMemo(() => rankByCost(visibleModels, activeUsage), [visibleModels, activeUsage])
 
   function toggleProvider(provider: Provider) {
     setSelectedProviders((previous) => {
@@ -35,7 +47,10 @@ export default function App() {
     })
   }
 
-  const totalTokens = usage.inputTokens + usage.outputTokens
+  const tabs: { key: SimMode; label: string }[] = [
+    { key: 'volume', label: 'Volume' },
+    { key: 'agentic', label: 'Estimation agentic' },
+  ]
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -60,21 +75,60 @@ export default function App() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 id="simulator-heading" className="text-base font-semibold">
-                Simulateur de volume
+                Simulateur
               </h2>
-              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                Soit{' '}
-                <span className="tabular font-medium text-slate-700 dark:text-slate-300">
-                  {formatTokens(totalTokens)}
-                </span>{' '}
-                tokens au total.
-              </p>
+              {mode === 'volume' && (
+                <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                  Soit{' '}
+                  <span className="tabular font-medium text-slate-700 dark:text-slate-300">
+                    {formatTokens(activeUsage.inputTokens + activeUsage.outputTokens)}
+                  </span>{' '}
+                  tokens au total.
+                </p>
+              )}
+              {mode === 'agentic' && (
+                <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                  Soit{' '}
+                  <span className="tabular font-semibold text-slate-900 dark:text-slate-100">
+                    {formatTokens(totalCalls(agenticParams))} appel{totalCalls(agenticParams) > 1 ? 's' : ''} au total
+                  </span>
+                  .
+                </p>
+              )}
             </div>
             <CurrencyToggle value={currency} onChange={setCurrency} />
           </div>
 
+          {/* Onglets */}
+          <div
+            role="tablist"
+            aria-label="Mode de simulation"
+            className="mt-4 flex gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800"
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                role="tab"
+                type="button"
+                aria-selected={mode === tab.key}
+                onClick={() => setMode(tab.key)}
+                className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
+                  mode === tab.key
+                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           <div className="mt-5">
-            <VolumeSimulator usage={usage} onChange={setUsage} />
+            {mode === 'volume' ? (
+              <VolumeSimulator usage={usage} onChange={setUsage} />
+            ) : (
+              <AgenticSimulator params={agenticParams} onChange={setAgenticParams} />
+            )}
           </div>
 
           <div className="mt-6 border-t border-slate-200 pt-5 dark:border-slate-800">
@@ -95,7 +149,11 @@ export default function App() {
             <BestValueCard breakdowns={breakdowns} currency={currency} />
           </div>
           <div className="mt-4">
-            <PricingTable breakdowns={breakdowns} currency={currency} />
+            <PricingTable
+              breakdowns={breakdowns}
+              currency={currency}
+              tasksCount={mode === 'agentic' ? agenticParams.tasks : undefined}
+            />
           </div>
         </section>
 
@@ -106,12 +164,12 @@ export default function App() {
               {formatDate(PRICING_VERIFIED_AT)}
             </strong>
             . Chaque nom de fournisseur renvoie vers sa page tarifaire officielle. Ces chiffres ne
-            sont pas récupérés en temps réel : vérifiez-les avant toute décision d’achat.
+            sont pas récupérés en temps réel : vérifiez-les avant toute décision d'achat.
           </p>
           <p className="mt-2">
             Conversion en francs CFA au taux de{' '}
             <span className="tabular">{USD_TO_XOF.toLocaleString('fr-FR')}</span> XOF pour 1 USD,
-            relevé le {formatDate(FX_RATE_DATE)}. Le franc CFA est arrimé à l’euro (655,957
+            relevé le {formatDate(FX_RATE_DATE)}. Le franc CFA est arrimé à l'euro (655,957
             XOF/EUR).
           </p>
           <p className="mt-3">

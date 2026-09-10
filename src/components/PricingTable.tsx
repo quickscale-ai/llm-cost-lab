@@ -1,25 +1,32 @@
 import { useMemo, useState } from 'react'
 import type { CostBreakdown } from '../lib/pricing'
-import { maxTotalCost } from '../lib/pricing'
+import { maxTotalCost, costPerTask } from '../lib/pricing'
 import type { Currency } from '../lib/format'
 import { formatContextWindow, formatCurrency } from '../lib/format'
 
-type SortKey = 'cost' | 'name' | 'input' | 'output' | 'context'
+type SortKey = 'cost' | 'name' | 'input' | 'output' | 'context' | 'costPerTask'
 
 interface Props {
   breakdowns: CostBreakdown[]
   currency: Currency
+  /** Si fourni, affiche une colonne « Coût / tâche » calculée sur ce nombre de tâches. */
+  tasksCount?: number
 }
 
-const COLUMNS: { key: SortKey; label: string; align: 'left' | 'right' }[] = [
+const BASE_COLUMNS: { key: SortKey; label: string; align: 'left' | 'right' }[] = [
   { key: 'name', label: 'Modèle', align: 'left' },
   { key: 'input', label: '$ / M entrée', align: 'right' },
   { key: 'output', label: '$ / M sortie', align: 'right' },
   { key: 'context', label: 'Contexte', align: 'right' },
-  { key: 'cost', label: 'Coût estimé', align: 'right' },
+  { key: 'cost', label: 'Coût total', align: 'right' },
+  { key: 'costPerTask', label: 'Coût / tâche', align: 'right' },
 ]
 
-function sortValue(breakdown: CostBreakdown, key: SortKey): number | string {
+function sortValue(
+  breakdown: CostBreakdown,
+  key: SortKey,
+  tasksCount: number,
+): number | string {
   switch (key) {
     case 'name':
       return breakdown.model.name
@@ -31,6 +38,8 @@ function sortValue(breakdown: CostBreakdown, key: SortKey): number | string {
       return breakdown.model.contextWindow ?? -1
     case 'cost':
       return breakdown.totalCost
+    case 'costPerTask':
+      return costPerTask(breakdown.totalCost, tasksCount)
   }
 }
 
@@ -58,21 +67,24 @@ function TierNote({ note }: { note: string }) {
   )
 }
 
-export function PricingTable({ breakdowns, currency }: Props) {
+export function PricingTable({ breakdowns, currency, tasksCount }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('cost')
   const [ascending, setAscending] = useState(true)
 
+  const tasks = tasksCount ?? 0
+  const columns = BASE_COLUMNS.filter((col) => col.key !== 'costPerTask' || tasks > 0)
+
   const sorted = useMemo(() => {
     return [...breakdowns].sort((a, b) => {
-      const left = sortValue(a, sortKey)
-      const right = sortValue(b, sortKey)
+      const left = sortValue(a, sortKey, tasks)
+      const right = sortValue(b, sortKey, tasks)
       const delta =
         typeof left === 'string' && typeof right === 'string'
           ? left.localeCompare(right, 'fr')
           : Number(left) - Number(right)
       return ascending ? delta : -delta
     })
-  }, [breakdowns, sortKey, ascending])
+  }, [breakdowns, sortKey, ascending, tasks])
 
   const ceiling = maxTotalCost(breakdowns)
 
@@ -102,7 +114,7 @@ export function PricingTable({ breakdowns, currency }: Props) {
         </caption>
         <thead>
           <tr className="border-b border-slate-200 dark:border-slate-800">
-            {COLUMNS.map((column) => {
+            {columns.map((column) => {
               const active = column.key === sortKey
               return (
                 <th
@@ -165,6 +177,11 @@ export function PricingTable({ breakdowns, currency }: Props) {
                   </div>
                   <CostBar ratio={ceiling > 0 ? breakdown.totalCost / ceiling : 0} />
                 </td>
+                {tasks > 0 && (
+                  <td className="tabular py-2.5 pl-4 text-right font-semibold text-slate-700 dark:text-slate-300">
+                    {formatCurrency(costPerTask(breakdown.totalCost, tasks), currency)}
+                  </td>
+                )}
               </tr>
             )
           })}
@@ -219,6 +236,14 @@ export function PricingTable({ breakdowns, currency }: Props) {
                     {formatContextWindow(model.contextWindow)}
                   </dd>
                 </div>
+                {tasks > 0 && (
+                  <div className="flex gap-1">
+                    <dt>/ tâche</dt>
+                    <dd className="font-semibold text-slate-700 dark:text-slate-300">
+                      {formatCurrency(costPerTask(breakdown.totalCost, tasks), currency)}
+                    </dd>
+                  </div>
+                )}
               </dl>
             </li>
           )
