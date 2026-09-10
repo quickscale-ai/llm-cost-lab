@@ -13,7 +13,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import QRCode from 'qrcode'
 
-const PRODUCTION_URL = 'https://impact-ia.quickscale.ai/'
+const PRODUCTION_URL = 'https://quickscale-ai.github.io/llm-cost-lab/'
 const url = process.argv[2] ?? PRODUCTION_URL
 
 const outputDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'docs')

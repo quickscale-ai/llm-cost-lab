@@ -22,6 +22,7 @@ labels: enhancement
 - [ ]
 
 <!--
-Pour déléguer à l'agent exécuteur, mentionnez @claude dans cette issue ou en
-commentaire. La PR produite sera revue automatiquement selon REVIEW.md.
+Pour déléguer à l'agent exécuteur, relisez le cadrage puis posez le label
+claude-ready. La PR produite est vérifiée par la CI et relue selon REVIEW.md ;
+le merge reste une décision humaine.
 -->

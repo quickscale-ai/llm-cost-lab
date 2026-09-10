@@ -4,7 +4,7 @@
 Comparez les tarifs des principaux fournisseurs et estimez ce que coûterait
 réellement votre usage — en dollars ou en francs CFA.
 
-🔗 **[impact-ia.quickscale.ai](https://impact-ia.quickscale.ai/)**
+🔗 **[quickscale-ai.github.io/llm-cost-lab](https://quickscale-ai.github.io/llm-cost-lab/)**
 
 ---
 
@@ -34,7 +34,7 @@ laquelle est revue par un agent reviewer appliquant les critères écrits dans
 ```
    Issue GitHub                  Pull Request                    Production
         │                             │                               │
-        │  @claude                    │  guidelines REVIEW.md         │
+        │  label claude-ready         │  guidelines REVIEW.md         │
         ▼                             ▼                               │
   ┌───────────────┐            ┌───────────────┐                      │
   │    Agent      │  ── PR ──▶ │    Agent      │                      │

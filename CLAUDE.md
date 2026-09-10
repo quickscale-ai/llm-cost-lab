@@ -36,3 +36,10 @@ npm run build        # build de production (affiche la taille gzip)
 
 `npm run typecheck && npm run test && npm run build` doivent passer, et la PR
 doit respecter [REVIEW.md](./REVIEW.md) — c'est ce que l'agent reviewer vérifie.
+
+## Revue d'une Pull Request
+
+Que la PR vienne d'un humain ou d'un agent, **[REVIEW.md](./REVIEW.md) est la
+grille de revue**. Lisez-la en entier avant de rendre un verdict, et appliquez
+sa table de sévérité : un point classé « Bloquant » ou « Important » justifie
+une demande de correction ; un « nit » ne bloque jamais.
