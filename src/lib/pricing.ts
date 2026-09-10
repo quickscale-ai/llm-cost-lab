@@ -90,3 +90,42 @@ export function computeSavings(breakdowns: CostBreakdown[]): number {
   if (!cheapest || !mostExpensive) return 0
   return mostExpensive.totalCost - cheapest.totalCost
 }
+
+// ─── Mode estimation agentic ────────────────────────────────────────────────
+
+/** Paramètres d'un déploiement agentic : tâches, appels, tokens par appel. */
+export interface AgenticParams {
+  tasks: number
+  iterationsPerTask: number
+  inputTokensPerCall: number
+  outputTokensPerCall: number
+}
+
+/** Nombre total d'appels au modèle pour un déploiement agentic. */
+export function totalCalls(params: AgenticParams): number {
+  return sanitize(params.tasks) * sanitize(params.iterationsPerTask)
+}
+
+/**
+ * Convertit des paramètres agentiques en volume brut de tokens.
+ *
+ * Le résultat peut être passé directement à `rankByCost` ou `computeCost`.
+ */
+export function agenticToUsage(params: AgenticParams): Usage {
+  const calls = totalCalls(params)
+  return {
+    inputTokens: calls * sanitize(params.inputTokensPerCall),
+    outputTokens: calls * sanitize(params.outputTokensPerCall),
+  }
+}
+
+/**
+ * Coût par tâche à partir du coût total et du nombre de tâches.
+ *
+ * Retourne 0 si le nombre de tâches est nul ou invalide.
+ */
+export function costPerTask(totalCost: number, tasks: number): number {
+  const t = sanitize(tasks)
+  if (t === 0) return 0
+  return totalCost / t
+}
