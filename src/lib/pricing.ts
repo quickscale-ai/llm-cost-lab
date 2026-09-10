@@ -76,3 +76,17 @@ export function rankByCost(models: Model[], usage: Usage): CostBreakdown[] {
 export function maxTotalCost(breakdowns: CostBreakdown[]): number {
   return breakdowns.reduce((max, b) => Math.max(max, b.totalCost), 0)
 }
+
+/**
+ * Économie réalisée en choisissant le modèle le moins cher plutôt que le plus cher.
+ *
+ * Attend la liste telle que retournée par `rankByCost` (triée du moins cher au
+ * plus cher). Retourne 0 sur une liste vide ou à un seul élément.
+ */
+export function computeSavings(breakdowns: CostBreakdown[]): number {
+  if (breakdowns.length < 2) return 0
+  const cheapest = breakdowns[0]
+  const mostExpensive = breakdowns[breakdowns.length - 1]
+  if (!cheapest || !mostExpensive) return 0
+  return mostExpensive.totalCost - cheapest.totalCost
+}
