@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { costForTokens, computeCost, rankByCost, maxTotalCost } from '../pricing'
+import { costForTokens, computeCost, rankByCost, maxTotalCost, computeSavings } from '../pricing'
 import type { Model } from '../../data/models'
 
 const opus: Model = {
@@ -87,5 +87,27 @@ describe('maxTotalCost', () => {
 
   it('retourne 0 sur une liste vide', () => {
     expect(maxTotalCost([])).toBe(0)
+  })
+})
+
+describe('computeSavings', () => {
+  it('retourne la différence entre le plus cher et le moins cher', () => {
+    const ranked = rankByCost([opus, haiku], { inputTokens: 1_000_000, outputTokens: 1_000_000 })
+    // haiku : 1+5 = 6 $, opus : 5+25 = 30 $ → économie = 24 $
+    expect(computeSavings(ranked)).toBe(24)
+  })
+
+  it('retourne 0 sur une liste vide', () => {
+    expect(computeSavings([])).toBe(0)
+  })
+
+  it('retourne 0 sur une liste à un seul modèle', () => {
+    const ranked = rankByCost([haiku], { inputTokens: 1_000_000, outputTokens: 1_000_000 })
+    expect(computeSavings(ranked)).toBe(0)
+  })
+
+  it('retourne 0 quand tous les coûts sont nuls (volume zéro)', () => {
+    const ranked = rankByCost([opus, haiku], { inputTokens: 0, outputTokens: 0 })
+    expect(computeSavings(ranked)).toBe(0)
   })
 })

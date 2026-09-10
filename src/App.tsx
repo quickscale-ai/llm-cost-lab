@@ -9,6 +9,7 @@ import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
 import { VolumeSimulator } from './components/VolumeSimulator'
 import { PricingTable } from './components/PricingTable'
+import { BestValueCard } from './components/BestValueCard'
 
 const DEFAULT_USAGE: Usage = { inputTokens: 1_000_000, outputTokens: 200_000 }
 
@@ -91,6 +92,9 @@ export default function App() {
             Coût estimé, du moins cher au plus cher
           </h2>
           <div className="mt-3">
+            <BestValueCard breakdowns={breakdowns} currency={currency} />
+          </div>
+          <div className="mt-4">
             <PricingTable breakdowns={breakdowns} currency={currency} />
           </div>
         </section>
