@@ -8,6 +8,7 @@ interface Props {
 const OPTIONS: { value: Currency; label: string }[] = [
   { value: 'USD', label: 'USD' },
   { value: 'XOF', label: 'FCFA' },
+  { value: 'EUR', label: 'EUR' },
 ]
 
 export function CurrencyToggle({ value, onChange }: Props) {
