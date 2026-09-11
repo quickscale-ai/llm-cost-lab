@@ -6,11 +6,16 @@ interface Props {
   onChange: (usage: Usage) => void
 }
 
-/** Volumes de référence proposés en un clic, pour ne pas saisir au clavier. */
+/**
+ * Volumes de référence proposés en un clic, pour ne pas saisir au clavier.
+ * L'échelle part d'un appel riche (10 K) : 1 M correspond déjà à la fenêtre de
+ * contexte maximale des plus gros modèles, ce n'est pas un point de départ.
+ */
 const PRESETS: { label: string; usage: Usage }[] = [
+  { label: '10 K / 2 K', usage: { inputTokens: 10_000, outputTokens: 2_000 } },
+  { label: '100 K / 20 K', usage: { inputTokens: 100_000, outputTokens: 20_000 } },
   { label: '1 M / 200 K', usage: { inputTokens: 1_000_000, outputTokens: 200_000 } },
   { label: '10 M / 2 M', usage: { inputTokens: 10_000_000, outputTokens: 2_000_000 } },
-  { label: '100 M / 20 M', usage: { inputTokens: 100_000_000, outputTokens: 20_000_000 } },
 ]
 
 interface FieldProps {

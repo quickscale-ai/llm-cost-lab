@@ -14,7 +14,7 @@ import { BestValueCard } from './components/BestValueCard'
 
 type SimMode = 'volume' | 'agentic'
 
-const DEFAULT_USAGE: Usage = { inputTokens: 1_000_000, outputTokens: 200_000 }
+const DEFAULT_USAGE: Usage = { inputTokens: 100_000, outputTokens: 20_000 }
 const DEFAULT_AGENTIC: AgenticParams = {
   tasks: 50,
   iterationsPerTask: 10,
