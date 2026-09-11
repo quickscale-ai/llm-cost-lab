@@ -6,6 +6,7 @@ import {
   formatContextWindow,
   formatDate,
   parseNumericInput,
+  XOF_PER_EUR,
 } from '../format'
 import { USD_TO_XOF } from '../../data/models'
 
@@ -22,6 +23,10 @@ describe('convert', () => {
 
   it('applique le taux de change vers le franc CFA', () => {
     expect(convert(1, 'XOF')).toBe(USD_TO_XOF)
+  })
+
+  it('convertit en euros via la parité fixe 1 EUR = 655,957 FCFA', () => {
+    expect(convert(1, 'EUR')).toBeCloseTo(USD_TO_XOF / XOF_PER_EUR, 10)
   })
 })
 
@@ -51,6 +56,12 @@ describe('formatCurrency', () => {
   it('affiche un tiret plutôt que NaN', () => {
     expect(formatCurrency(NaN, 'USD')).toBe('—')
     expect(formatCurrency(Infinity, 'XOF')).toBe('—')
+  })
+
+  it('affiche le montant en euros avec le symbole € au format français', () => {
+    // 655,957 FCFA = 1 EUR exactement (parité fixe)
+    const amountUsd = XOF_PER_EUR / USD_TO_XOF
+    expect(normalize(formatCurrency(amountUsd, 'EUR'))).toBe('1,00 €')
   })
 
   it('gère le zéro', () => {

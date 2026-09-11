@@ -169,8 +169,8 @@ export default function App() {
           <p className="mt-2">
             Conversion en francs CFA au taux de{' '}
             <span className="tabular">{USD_TO_XOF.toLocaleString('fr-FR')}</span> XOF pour 1 USD,
-            relevé le {formatDate(FX_RATE_DATE)}. Le franc CFA est arrimé à l'euro (655,957
-            XOF/EUR).
+            relevé le {formatDate(FX_RATE_DATE)}. Conversion en euros déduite de la parité fixe
+            1 EUR = 655,957 XOF (franc CFA arrimé à l&apos;euro).
           </p>
           <p className="mt-3">
             <a

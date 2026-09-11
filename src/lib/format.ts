@@ -8,11 +8,16 @@
 
 import { USD_TO_XOF } from '../data/models'
 
-export type Currency = 'USD' | 'XOF'
+export type Currency = 'USD' | 'XOF' | 'EUR'
+
+/** Parité fixe officielle : 1 EUR = 655,957 XOF (franc CFA arrimé à l'euro). */
+export const XOF_PER_EUR = 655.957
 
 /** Convertit un montant en dollars vers la devise demandée. */
 export function convert(amountUsd: number, currency: Currency): number {
-  return currency === 'USD' ? amountUsd : amountUsd * USD_TO_XOF
+  if (currency === 'USD') return amountUsd
+  if (currency === 'XOF') return amountUsd * USD_TO_XOF
+  return (amountUsd * USD_TO_XOF) / XOF_PER_EUR
 }
 
 /**
