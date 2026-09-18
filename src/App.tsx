@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Provider } from './data/models'
 import { MODELS, PROVIDERS, PRICING_VERIFIED_AT, FX_RATE_DATE, USD_TO_XOF } from './data/models'
 import type { Usage, AgenticParams } from './lib/pricing'
-import { rankByCost, agenticToUsage, totalCalls } from './lib/pricing'
+import { rankByCost, agenticToUsage, totalCalls, computeCost, compareCosts } from './lib/pricing'
 import type { Currency } from './lib/format'
 import { formatDate, formatTokens } from './lib/format'
 import { CurrencyToggle } from './components/CurrencyToggle'
@@ -11,6 +11,7 @@ import { VolumeSimulator } from './components/VolumeSimulator'
 import { AgenticSimulator } from './components/AgenticSimulator'
 import { PricingTable } from './components/PricingTable'
 import { BestValueCard } from './components/BestValueCard'
+import { ModelComparison } from './components/ModelComparison'
 
 type SimMode = 'volume' | 'agentic'
 
@@ -29,14 +30,33 @@ export default function App() {
   const [currency, setCurrency] = useState<Currency>('USD')
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
   const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
+  const [comparisonSelection, setComparisonSelection] = useState<[string, string]>(() => [
+    MODELS[0]?.id ?? '',
+    MODELS[1]?.id ?? '',
+  ])
 
   const visibleModels = useMemo(() => {
     if (selectedProviders.size === 0) return MODELS
     return MODELS.filter((model) => selectedProviders.has(model.provider))
   }, [selectedProviders])
 
+  const selectedComparisonModels = useMemo(() => {
+    const first = visibleModels.find((model) => model.id === comparisonSelection[0]) ?? visibleModels[0]
+    const second =
+      visibleModels.find((model) => model.id === comparisonSelection[1] && model.id !== first?.id) ??
+      visibleModels.find((model) => model.id !== first?.id)
+    return [first, second] as const
+  }, [visibleModels, comparisonSelection])
+
   const activeUsage = mode === 'agentic' ? agenticToUsage(agenticParams) : usage
   const breakdowns = useMemo(() => rankByCost(visibleModels, activeUsage), [visibleModels, activeUsage])
+  const comparisonCosts = useMemo(() => {
+    const [firstModel, secondModel] = selectedComparisonModels
+    if (!firstModel || !secondModel) return { first: undefined, second: undefined, comparison: undefined }
+    const first = computeCost(firstModel, activeUsage)
+    const second = computeCost(secondModel, activeUsage)
+    return { first, second, comparison: compareCosts(first.totalCost, second.totalCost) }
+  }, [selectedComparisonModels, activeUsage])
 
   function toggleProvider(provider: Provider) {
     setSelectedProviders((previous) => {
@@ -140,6 +160,20 @@ export default function App() {
             />
           </div>
         </section>
+
+        <div className="mt-8">
+          <ModelComparison
+            models={visibleModels}
+            firstModelId={selectedComparisonModels[0]?.id}
+            secondModelId={selectedComparisonModels[1]?.id}
+            onFirstModelChange={(id) => setComparisonSelection(([_, second]) => [id, second])}
+            onSecondModelChange={(id) => setComparisonSelection(([first]) => [first, id])}
+            firstCost={comparisonCosts.first}
+            secondCost={comparisonCosts.second}
+            comparison={comparisonCosts.comparison}
+            currency={currency}
+          />
+        </div>
 
         <section aria-labelledby="results-heading" className="mt-8">
           <h2 id="results-heading" className="text-base font-semibold">

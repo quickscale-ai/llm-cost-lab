@@ -5,6 +5,7 @@ import {
   rankByCost,
   maxTotalCost,
   computeSavings,
+  compareCosts,
   totalCalls,
   agenticToUsage,
   costPerTask,
@@ -45,6 +46,10 @@ describe('costForTokens', () => {
     expect(costForTokens(NaN, 5)).toBe(0)
     expect(costForTokens(Infinity, 5)).toBe(0)
     expect(costForTokens(1_000_000, -5)).toBe(0)
+  })
+
+  it('reste fini pour un volume extrêmement grand', () => {
+    expect(Number.isFinite(costForTokens(Number.MAX_VALUE, 50))).toBe(true)
   })
 })
 
@@ -118,6 +123,22 @@ describe('computeSavings', () => {
   it('retourne 0 quand tous les coûts sont nuls (volume zéro)', () => {
     const ranked = rankByCost([opus, haiku], { inputTokens: 0, outputTokens: 0 })
     expect(computeSavings(ranked)).toBe(0)
+  })
+})
+
+describe('compareCosts', () => {
+  it('calcule l’écart et le pourcentage par rapport au coût le plus élevé', () => {
+    expect(compareCosts(6, 30)).toEqual({ difference: 24, percentage: 80, cheaper: 'first' })
+    expect(compareCosts(30, 6).cheaper).toBe('second')
+  })
+
+  it('signale un ex æquo, y compris quand les coûts sont nuls', () => {
+    expect(compareCosts(0, 0)).toEqual({ difference: 0, percentage: 0, cheaper: 'equal' })
+    expect(compareCosts(NaN, Infinity)).toEqual({ difference: 0, percentage: 0, cheaper: 'equal' })
+  })
+
+  it('ne produit jamais de pourcentage infini', () => {
+    expect(compareCosts(0, 5).percentage).toBe(100)
   })
 })
 

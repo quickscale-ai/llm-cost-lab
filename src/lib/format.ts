@@ -32,6 +32,7 @@ export function formatCurrency(amountUsd: number, currency: Currency): string {
   if (!Number.isFinite(amountUsd)) return '—'
 
   const value = convert(amountUsd, currency)
+  if (!Number.isFinite(value)) return '—'
   const magnitude = Math.abs(value)
 
   // min/max vont par paire : un montant courant doit afficher ses deux

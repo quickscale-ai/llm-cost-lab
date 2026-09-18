@@ -38,18 +38,21 @@ function sanitize(value: number): number {
 
 /** Coût d'un volume de tokens, en dollars, pour un tarif par million donné. */
 export function costForTokens(tokens: number, pricePerMTok: number): number {
-  return (sanitize(tokens) / TOKENS_PER_MILLION) * sanitize(pricePerMTok)
+  const result = (sanitize(tokens) / TOKENS_PER_MILLION) * sanitize(pricePerMTok)
+  // Un volume extrêmement grand peut dépasser la capacité d'un nombre JavaScript.
+  return Number.isFinite(result) ? result : Number.MAX_VALUE
 }
 
 /** Décompose le coût d'un usage brut pour un modèle. */
 export function computeCost(model: Model, usage: Usage): CostBreakdown {
   const inputCost = costForTokens(usage.inputTokens, model.inputPerMTok)
   const outputCost = costForTokens(usage.outputTokens, model.outputPerMTok)
+  const totalCost = inputCost + outputCost
   return {
     model,
     inputCost,
     outputCost,
-    totalCost: inputCost + outputCost,
+    totalCost: Number.isFinite(totalCost) ? totalCost : Number.MAX_VALUE,
   }
 }
 
@@ -89,6 +92,28 @@ export function computeSavings(breakdowns: CostBreakdown[]): number {
   const mostExpensive = breakdowns[breakdowns.length - 1]
   if (!cheapest || !mostExpensive) return 0
   return mostExpensive.totalCost - cheapest.totalCost
+}
+
+export type ComparisonWinner = 'first' | 'second' | 'equal'
+
+export interface CostComparison {
+  difference: number
+  percentage: number
+  cheaper: ComparisonWinner
+}
+
+/** Compare deux coûts en prenant le coût le plus élevé comme référence du pourcentage. */
+export function compareCosts(first: number, second: number): CostComparison {
+  const safeFirst = Number.isFinite(first) && first >= 0 ? first : 0
+  const safeSecond = Number.isFinite(second) && second >= 0 ? second : 0
+  const difference = Math.abs(safeFirst - safeSecond)
+  const reference = Math.max(safeFirst, safeSecond)
+
+  return {
+    difference,
+    percentage: reference === 0 ? 0 : (difference / reference) * 100,
+    cheaper: safeFirst === safeSecond ? 'equal' : safeFirst < safeSecond ? 'first' : 'second',
+  }
 }
 
 // ─── Mode estimation agentic ────────────────────────────────────────────────
