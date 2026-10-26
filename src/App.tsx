@@ -12,7 +12,7 @@ import { AgenticSimulator } from './components/AgenticSimulator'
 import { PricingTable } from './components/PricingTable'
 import { BestValueCard } from './components/BestValueCard'
 import { ModelComparison } from './components/ModelComparison'
-import { createShareUrl, readShareState } from './lib/share'
+import { createShareUrl, readShareState, shareWithFallback } from './lib/share'
 
 type SimMode = 'volume' | 'agentic'
 
@@ -104,15 +104,21 @@ export default function App() {
 
     if ('share' in navigator) {
       try {
-        await navigator.share({
-          title: 'Mon estimation de coût IA',
-          text: 'Voici mon estimation de coût dans le simulateur.',
-          url,
-        })
-        setShareStatus('shared')
+        const outcome = await shareWithFallback(
+          () =>
+            navigator.share({
+              title: 'Mon estimation de coût IA',
+              text: 'Voici mon estimation de coût dans le simulateur.',
+              url,
+            }),
+          () => copyToClipboard(url),
+        )
+        if (outcome === 'cancelled') return
+        setShareStatus(outcome)
         return
-      } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') return
+      } catch {
+        setShareStatus('error')
+        return
       }
     }
 

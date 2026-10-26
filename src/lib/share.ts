@@ -11,6 +11,25 @@ export interface ShareState {
   comparisonSelection: readonly [string, string]
 }
 
+/** Partage nativement puis utilise le repli uniquement pour les autres erreurs. */
+export async function shareWithFallback(
+  share: () => Promise<void>,
+  fallback: () => Promise<void>,
+): Promise<'shared' | 'copied' | 'cancelled'> {
+  try {
+    await share()
+    return 'shared'
+  } catch (error) {
+    if (isAbortError(error)) return 'cancelled'
+    await fallback()
+    return 'copied'
+  }
+}
+
+function isAbortError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError'
+}
+
 const SHARE_KEYS = [
   'mode',
   'currency',

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Provider } from '../../data/models'
 import type { Currency } from '../format'
 import type { ShareState } from '../share'
-import { createShareUrl, readShareState } from '../share'
+import { createShareUrl, readShareState, shareWithFallback } from '../share'
 
 const providers: Provider[] = ['Anthropic', 'OpenAI', 'Google']
 const modelIds = ['model-one', 'model-two', 'model-three']
@@ -51,6 +51,23 @@ describe('createShareUrl', () => {
 
     expect(new URL(url).searchParams.get('providers')).toBe('')
     expect(readShareState(new URL(url).search, sharedState, providers, modelIds).selectedProviders).toEqual([])
+  })
+})
+
+describe('shareWithFallback', () => {
+  it('ne replie pas vers la copie quand le partage est annulé par une DOMException', async () => {
+    let fallbackCalled = false
+    const outcome = await shareWithFallback(
+      async () => {
+        throw new DOMException('The user aborted a request.', 'AbortError')
+      },
+      async () => {
+        fallbackCalled = true
+      },
+    )
+
+    expect(outcome).toBe('cancelled')
+    expect(fallbackCalled).toBe(false)
   })
 })
 
