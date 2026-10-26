@@ -12,6 +12,7 @@ import { AgenticSimulator } from './components/AgenticSimulator'
 import { PricingTable } from './components/PricingTable'
 import { BestValueCard } from './components/BestValueCard'
 import { ModelComparison } from './components/ModelComparison'
+import { createShareUrl, readShareState } from './lib/share'
 
 type SimMode = 'volume' | 'agentic'
 
@@ -23,16 +24,37 @@ const DEFAULT_AGENTIC: AgenticParams = {
   outputTokensPerCall: 1_500,
 }
 
+const DEFAULT_SHARE_STATE = {
+  mode: 'volume' as const,
+  usage: DEFAULT_USAGE,
+  agenticParams: DEFAULT_AGENTIC,
+  currency: 'USD' as Currency,
+  selectedProviders: [] as Provider[],
+  comparisonSelection: [MODELS[0]?.id ?? '', MODELS[1]?.id ?? ''] as [string, string],
+}
+
+const INITIAL_SHARE_STATE = readShareState(
+  typeof window === 'undefined' ? '' : window.location.search,
+  DEFAULT_SHARE_STATE,
+  PROVIDERS,
+  MODELS.map((model) => model.id),
+)
+
+type ShareStatus = 'idle' | 'shared' | 'copied' | 'error'
+
 export default function App() {
-  const [mode, setMode] = useState<SimMode>('volume')
-  const [usage, setUsage] = useState<Usage>(DEFAULT_USAGE)
-  const [agenticParams, setAgenticParams] = useState<AgenticParams>(DEFAULT_AGENTIC)
-  const [currency, setCurrency] = useState<Currency>('USD')
+  const [mode, setMode] = useState<SimMode>(INITIAL_SHARE_STATE.mode)
+  const [usage, setUsage] = useState<Usage>(INITIAL_SHARE_STATE.usage)
+  const [agenticParams, setAgenticParams] = useState<AgenticParams>(INITIAL_SHARE_STATE.agenticParams)
+  const [currency, setCurrency] = useState<Currency>(INITIAL_SHARE_STATE.currency)
+  const [shareStatus, setShareStatus] = useState<ShareStatus>('idle')
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
-  const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
+  const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(
+    () => new Set(INITIAL_SHARE_STATE.selectedProviders),
+  )
   const [comparisonSelection, setComparisonSelection] = useState<[string, string]>(() => [
-    MODELS[0]?.id ?? '',
-    MODELS[1]?.id ?? '',
+    INITIAL_SHARE_STATE.comparisonSelection[0],
+    INITIAL_SHARE_STATE.comparisonSelection[1],
   ])
 
   const visibleModels = useMemo(() => {
@@ -65,6 +87,41 @@ export default function App() {
       else next.add(provider)
       return next
     })
+  }
+
+  async function shareEstimate() {
+    const url = createShareUrl(
+      {
+        mode,
+        usage,
+        agenticParams,
+        currency,
+        selectedProviders: [...selectedProviders],
+        comparisonSelection,
+      },
+      window.location.href,
+    )
+
+    if ('share' in navigator) {
+      try {
+        await navigator.share({
+          title: 'Mon estimation de coût IA',
+          text: 'Voici mon estimation de coût dans le simulateur.',
+          url,
+        })
+        setShareStatus('shared')
+        return
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return
+      }
+    }
+
+    try {
+      await copyToClipboard(url)
+      setShareStatus('copied')
+    } catch {
+      setShareStatus('error')
+    }
   }
 
   const tabs: { key: SimMode; label: string }[] = [
@@ -116,8 +173,24 @@ export default function App() {
                 </p>
               )}
             </div>
-            <CurrencyToggle value={currency} onChange={setCurrency} />
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <CurrencyToggle value={currency} onChange={setCurrency} />
+              <button
+                type="button"
+                onClick={shareEstimate}
+                className="rounded-lg border border-brand-600 bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-brand-500 dark:bg-brand-500 dark:text-slate-950 dark:hover:bg-brand-400 dark:focus-visible:outline-brand-500"
+              >
+                Partager l&apos;estimation
+              </button>
+            </div>
           </div>
+          {shareStatus !== 'idle' && (
+            <p role="status" className="mt-2 text-right text-sm text-slate-600 dark:text-slate-400">
+              {shareStatus === 'shared' && 'Estimation partagée.'}
+              {shareStatus === 'copied' && 'Lien copié. Envoyez-le à votre manager.'}
+              {shareStatus === 'error' && 'Impossible de copier le lien de partage.'}
+            </p>
+          )}
 
           {/* Onglets */}
           <div
@@ -220,4 +293,22 @@ export default function App() {
       </div>
     </div>
   )
+}
+
+async function copyToClipboard(text: string): Promise<void> {
+  if (navigator.clipboard) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+
+  const input = document.createElement('textarea')
+  input.value = text
+  input.setAttribute('readonly', '')
+  input.style.position = 'fixed'
+  input.style.opacity = '0'
+  document.body.appendChild(input)
+  input.select()
+  const copied = document.execCommand('copy')
+  document.body.removeChild(input)
+  if (!copied) throw new Error('La copie du lien a échoué.')
 }
