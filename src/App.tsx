@@ -5,8 +5,11 @@ import type { Usage, AgenticParams } from './lib/pricing'
 import { rankByCost, agenticToUsage, totalCalls, computeCost, compareCosts } from './lib/pricing'
 import type { Currency } from './lib/format'
 import { formatDate, formatTokens } from './lib/format'
+import type { ContextWindowMinimum } from './lib/context'
+import { filterModelsByContextWindow } from './lib/context'
 import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
+import { ContextFilter } from './components/ContextFilter'
 import { VolumeSimulator } from './components/VolumeSimulator'
 import { AgenticSimulator } from './components/AgenticSimulator'
 import { PricingTable } from './components/PricingTable'
@@ -30,15 +33,17 @@ export default function App() {
   const [currency, setCurrency] = useState<Currency>('USD')
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
   const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
+  const [minimumContextWindow, setMinimumContextWindow] = useState<ContextWindowMinimum>(0)
   const [comparisonSelection, setComparisonSelection] = useState<[string, string]>(() => [
     MODELS[0]?.id ?? '',
     MODELS[1]?.id ?? '',
   ])
 
   const visibleModels = useMemo(() => {
-    if (selectedProviders.size === 0) return MODELS
-    return MODELS.filter((model) => selectedProviders.has(model.provider))
-  }, [selectedProviders])
+    const providerFilteredModels =
+      selectedProviders.size === 0 ? MODELS : MODELS.filter((model) => selectedProviders.has(model.provider))
+    return filterModelsByContextWindow(providerFilteredModels, minimumContextWindow)
+  }, [selectedProviders, minimumContextWindow])
 
   const selectedComparisonModels = useMemo(() => {
     const first = visibleModels.find((model) => model.id === comparisonSelection[0]) ?? visibleModels[0]
@@ -158,6 +163,9 @@ export default function App() {
               onToggle={toggleProvider}
               onReset={() => setSelectedProviders(new Set())}
             />
+            <div className="mt-5 border-t border-slate-200 pt-5 dark:border-slate-800">
+              <ContextFilter value={minimumContextWindow} onChange={setMinimumContextWindow} />
+            </div>
           </div>
         </section>
 
