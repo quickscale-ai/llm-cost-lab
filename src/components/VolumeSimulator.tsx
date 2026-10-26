@@ -18,6 +18,10 @@ const PRESETS: { label: string; usage: Usage }[] = [
   { label: '10 M / 2 M', usage: { inputTokens: 10_000_000, outputTokens: 2_000_000 } },
 ]
 
+export const VOLUME_PRESET_GRID_CLASS = 'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4'
+export const VOLUME_PRESET_BUTTON_CLASS =
+  'tabular min-h-11 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition-colors hover:border-brand-600 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+
 interface FieldProps {
   id: string
   label: string
@@ -67,8 +71,8 @@ export function VolumeSimulator({ usage, onChange }: Props) {
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+      <div className={VOLUME_PRESET_GRID_CLASS}>
+        <span className="col-span-2 text-xs font-medium tracking-wide text-slate-500 uppercase sm:col-span-4 dark:text-slate-400">
           Volumes types
         </span>
         {PRESETS.map((preset) => (
@@ -76,7 +80,7 @@ export function VolumeSimulator({ usage, onChange }: Props) {
             key={preset.label}
             type="button"
             onClick={() => onChange(preset.usage)}
-            className="tabular rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition-colors hover:border-brand-600 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+            className={VOLUME_PRESET_BUTTON_CLASS}
           >
             {preset.label}
           </button>
