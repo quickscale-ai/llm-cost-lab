@@ -26,6 +26,7 @@ laquelle est revue par un agent reviewer appliquant les critères écrits dans
 - Simulateur de coût par volume de tokens, classé du moins cher au plus cher
 - Affichage en **USD** ou en **FCFA** (franc CFA)
 - Filtre par fournisseur
+- Recherche d'un modèle par son nom, tolérante à la casse et aux accents
 - Chaque tarif renvoie vers la page tarifaire officielle dont il est issu, et
   l'ensemble porte sa date de vérification
 
