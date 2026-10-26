@@ -5,6 +5,7 @@ import type { Usage, AgenticParams } from './lib/pricing'
 import { rankByCost, agenticToUsage, totalCalls, computeCost, compareCosts } from './lib/pricing'
 import type { Currency } from './lib/format'
 import { formatDate, formatTokens } from './lib/format'
+import { buildSimulationCsv } from './lib/export'
 import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
 import { VolumeSimulator } from './components/VolumeSimulator'
@@ -65,6 +66,26 @@ export default function App() {
       else next.add(provider)
       return next
     })
+  }
+
+  function exportSimulation() {
+    const csv = buildSimulationCsv({
+      mode,
+      usage: activeUsage,
+      currency,
+      breakdowns,
+      tasksCount: mode === 'agentic' ? agenticParams.tasks : undefined,
+      callsCount: mode === 'agentic' ? totalCalls(agenticParams) : undefined,
+    })
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'simulation-couts.csv'
+    document.body.append(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
   }
 
   const tabs: { key: SimMode; label: string }[] = [
@@ -176,9 +197,18 @@ export default function App() {
         </div>
 
         <section aria-labelledby="results-heading" className="mt-8">
-          <h2 id="results-heading" className="text-base font-semibold">
-            Coût estimé, du moins cher au plus cher
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="results-heading" className="text-base font-semibold">
+              Coût estimé, du moins cher au plus cher
+            </h2>
+            <button
+              type="button"
+              onClick={exportSimulation}
+              className="inline-flex items-center gap-2 rounded-lg border border-brand-600 px-3 py-1.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-500 dark:hover:bg-brand-950"
+            >
+              Exporter en CSV
+            </button>
+          </div>
           <div className="mt-3">
             <BestValueCard breakdowns={breakdowns} currency={currency} />
           </div>
