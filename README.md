@@ -13,7 +13,7 @@ réellement votre usage — en dollars ou en francs CFA.
 Quand une organisation passe d'un prototype d'IA à un déploiement d'agents à
 l'échelle, la question qui arrive systématiquement est : *combien ça coûte pour
 de vrai ?* Le prix affiché par million de tokens ne répond pas à cette question.
-Cet outil traduit des tarifs en budget.
+Cet outil traduit des tarifs en budget concret.
 
 Ce dépôt sert aussi de support à une démonstration d'**agentic coding** : une
 issue est prise en charge par un agent exécuteur qui ouvre une Pull Request,
