@@ -11,6 +11,8 @@ interface Props {
   currency: Currency
   /** Si fourni, affiche une colonne « Coût / tâche » calculée sur ce nombre de tâches. */
   tasksCount?: number
+  /** Message affiché quand les filtres ne retournent aucun modèle. */
+  emptyMessage?: string
 }
 
 const BASE_COLUMNS: { key: SortKey; label: string; align: 'left' | 'right' }[] = [
@@ -67,7 +69,7 @@ function TierNote({ note }: { note: string }) {
   )
 }
 
-export function PricingTable({ breakdowns, currency, tasksCount }: Props) {
+export function PricingTable({ breakdowns, currency, tasksCount, emptyMessage }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('cost')
   const [ascending, setAscending] = useState(true)
 
@@ -100,7 +102,7 @@ export function PricingTable({ breakdowns, currency, tasksCount }: Props) {
   if (breakdowns.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-        Aucun modèle ne correspond au filtre sélectionné.
+        {emptyMessage ?? 'Aucun modèle ne correspond au filtre sélectionné.'}
       </p>
     )
   }

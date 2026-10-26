@@ -5,6 +5,7 @@ import type { Usage, AgenticParams } from './lib/pricing'
 import { rankByCost, agenticToUsage, totalCalls, computeCost, compareCosts } from './lib/pricing'
 import type { Currency } from './lib/format'
 import { formatDate, formatTokens } from './lib/format'
+import { filterModelsByName } from './lib/search'
 import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
 import { VolumeSimulator } from './components/VolumeSimulator'
@@ -30,6 +31,7 @@ export default function App() {
   const [currency, setCurrency] = useState<Currency>('USD')
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
   const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
+  const [modelSearch, setModelSearch] = useState('')
   const [comparisonSelection, setComparisonSelection] = useState<[string, string]>(() => [
     MODELS[0]?.id ?? '',
     MODELS[1]?.id ?? '',
@@ -49,7 +51,11 @@ export default function App() {
   }, [visibleModels, comparisonSelection])
 
   const activeUsage = mode === 'agentic' ? agenticToUsage(agenticParams) : usage
-  const breakdowns = useMemo(() => rankByCost(visibleModels, activeUsage), [visibleModels, activeUsage])
+  const searchedModels = useMemo(
+    () => filterModelsByName(visibleModels, modelSearch),
+    [visibleModels, modelSearch],
+  )
+  const breakdowns = useMemo(() => rankByCost(searchedModels, activeUsage), [searchedModels, activeUsage])
   const comparisonCosts = useMemo(() => {
     const [firstModel, secondModel] = selectedComparisonModels
     if (!firstModel || !secondModel) return { first: undefined, second: undefined, comparison: undefined }
@@ -179,7 +185,32 @@ export default function App() {
           <h2 id="results-heading" className="text-base font-semibold">
             Coût estimé, du moins cher au plus cher
           </h2>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <label htmlFor="model-search" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Rechercher un modèle
+            </label>
+            <div className="relative w-full sm:max-w-sm">
+              <input
+                id="model-search"
+                type="search"
+                value={modelSearch}
+                onChange={(event) => setModelSearch(event.target.value)}
+                placeholder="Ex. Mistral Large"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-10 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand-600 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-brand-500 dark:focus:ring-slate-700"
+              />
+              {modelSearch !== '' && (
+                <button
+                  type="button"
+                  onClick={() => setModelSearch('')}
+                  aria-label="Effacer la recherche"
+                  className="absolute inset-y-0 right-0 px-3 text-slate-500 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="mt-4">
             <BestValueCard breakdowns={breakdowns} currency={currency} />
           </div>
           <div className="mt-4">
@@ -187,6 +218,11 @@ export default function App() {
               breakdowns={breakdowns}
               currency={currency}
               tasksCount={mode === 'agentic' ? agenticParams.tasks : undefined}
+              emptyMessage={
+                modelSearch.trim() !== ''
+                  ? 'Aucun modèle ne correspond à cette recherche.'
+                  : 'Aucun modèle ne correspond au filtre fournisseur sélectionné.'
+              }
             />
           </div>
         </section>
