@@ -5,6 +5,8 @@ import type { Usage, AgenticParams } from './lib/pricing'
 import { rankByCost, agenticToUsage, totalCalls, computeCost, compareCosts } from './lib/pricing'
 import type { Currency } from './lib/format'
 import { formatDate, formatTokens } from './lib/format'
+import { decodeSimulation, encodeSimulation } from './lib/share'
+import type { SimMode } from './lib/share'
 import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
 import { VolumeSimulator } from './components/VolumeSimulator'
@@ -12,8 +14,6 @@ import { AgenticSimulator } from './components/AgenticSimulator'
 import { PricingTable } from './components/PricingTable'
 import { BestValueCard } from './components/BestValueCard'
 import { ModelComparison } from './components/ModelComparison'
-
-type SimMode = 'volume' | 'agentic'
 
 const DEFAULT_USAGE: Usage = { inputTokens: 100_000, outputTokens: 20_000 }
 const DEFAULT_AGENTIC: AgenticParams = {
@@ -23,13 +23,20 @@ const DEFAULT_AGENTIC: AgenticParams = {
   outputTokensPerCall: 1_500,
 }
 
+const sharedSimulation = typeof window === 'undefined' ? null : decodeSimulation(window.location.search)
+
 export default function App() {
-  const [mode, setMode] = useState<SimMode>('volume')
-  const [usage, setUsage] = useState<Usage>(DEFAULT_USAGE)
-  const [agenticParams, setAgenticParams] = useState<AgenticParams>(DEFAULT_AGENTIC)
-  const [currency, setCurrency] = useState<Currency>('USD')
+  const [mode, setMode] = useState<SimMode>(sharedSimulation?.mode ?? 'volume')
+  const [usage, setUsage] = useState<Usage>(sharedSimulation?.usage ?? DEFAULT_USAGE)
+  const [agenticParams, setAgenticParams] = useState<AgenticParams>(
+    sharedSimulation?.agenticParams ?? DEFAULT_AGENTIC,
+  )
+  const [currency, setCurrency] = useState<Currency>(sharedSimulation?.currency ?? 'USD')
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
-  const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
+  const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(
+    () => new Set(sharedSimulation?.selectedProviders ?? []),
+  )
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle')
   const [comparisonSelection, setComparisonSelection] = useState<[string, string]>(() => [
     MODELS[0]?.id ?? '',
     MODELS[1]?.id ?? '',
@@ -65,6 +72,24 @@ export default function App() {
       else next.add(provider)
       return next
     })
+  }
+
+  async function copyShareLink() {
+    const link = encodeSimulation({
+      mode,
+      usage,
+      agenticParams,
+      currency,
+      selectedProviders: [...selectedProviders],
+    })
+
+    try {
+      if (!navigator.clipboard) throw new Error('Presse-papiers indisponible')
+      await navigator.clipboard.writeText(link)
+      setCopyStatus('copied')
+    } catch {
+      setCopyStatus('error')
+    }
   }
 
   const tabs: { key: SimMode; label: string }[] = [
@@ -116,7 +141,24 @@ export default function App() {
                 </p>
               )}
             </div>
-            <CurrencyToggle value={currency} onChange={setCurrency} />
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <CurrencyToggle value={currency} onChange={setCurrency} />
+              <button
+                type="button"
+                onClick={copyShareLink}
+                className="rounded-lg border border-brand-600 px-3 py-1.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-400 dark:hover:bg-brand-950"
+              >
+                Copier le lien
+              </button>
+              {copyStatus !== 'idle' && (
+                <span
+                  role="status"
+                  className="text-xs text-slate-500 dark:text-slate-400"
+                >
+                  {copyStatus === 'copied' ? 'Lien copié !' : 'Copie impossible'}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Onglets */}
