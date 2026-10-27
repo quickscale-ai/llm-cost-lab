@@ -3,9 +3,9 @@
 base: main
 guardrail_paths:
   - ".dev-automation.yml"
-  - "src/data/**"
+  - "src/lib/pricing.ts"
 cadrage:
   direct: true
-  max_lines: 200
+  max_lines: 150
   tech_leads:
     - HMohQuickscale
