@@ -5,7 +5,10 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { MODELS } from '../data/models'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
+import { computeCost } from '../lib/pricing'
+import { formatCurrency } from '../lib/format'
 
 const printStylesheet = readFileSync('src/index.css', 'utf8')
 
@@ -99,6 +102,56 @@ function tableRowForModel(container: HTMLDivElement, name: string) {
     row.querySelector('td')?.textContent?.includes(name),
   )
 }
+
+function monthlyChart(container: HTMLDivElement) {
+  const chart = container.querySelector<HTMLElement>('[aria-labelledby="monthly-cost-chart-heading"]')
+  if (!chart) throw new Error('Graphique des coûts introuvable')
+  return chart
+}
+
+describe('graphique des coûts mensuels', () => {
+  it('est placé après le simulateur et affiche une barre par modèle visible (C1, C2)', () => {
+    const container = renderApp()
+    const sections = Array.from(container.querySelectorAll('section')).map((section) => section.getAttribute('aria-labelledby'))
+    const chart = monthlyChart(container)
+
+    expect(sections).toEqual(['simulator-heading', 'monthly-cost-chart-heading', 'comparison-heading', 'results-heading'])
+    expect(chart.querySelector('svg')?.getAttribute('role')).toBe('img')
+    expect(chart.querySelector('svg')?.getAttribute('aria-labelledby')).toBe(
+      'monthly-cost-chart-title monthly-cost-chart-description',
+    )
+    expect(chart.querySelectorAll('[data-model-id]')).toHaveLength(16)
+    const firstModel = MODELS[0]
+    if (!firstModel) throw new Error('Modèle de test introuvable')
+    const expectedCost = formatCurrency(
+      computeCost(firstModel, { inputTokens: 100_000, outputTokens: 20_000 }).totalCost,
+      'USD',
+    )
+    expect(chart.querySelector('[data-model-id="claude-fable-5-1"]')?.textContent).toContain('Claude Fable 5.1')
+    expect(chart.querySelector('[data-model-id="claude-fable-5-1"]')?.textContent).toContain(expectedCost)
+  })
+
+  it('suit les filtres, le mode de simulation et la devise (C3, C4)', () => {
+    const container = renderApp()
+    const chart = monthlyChart(container)
+    const initialValues = chart.textContent
+
+    act(() => buttonWithText(container, 'Mistral AI').click())
+    expect(chart.querySelectorAll('[data-model-id]')).toHaveLength(2)
+    changeSearch(container, 'small')
+    expect(chart.querySelectorAll('[data-model-id]')).toHaveLength(1)
+    expect(chart.querySelector('[data-model-id="mistral-small-4"]')).toBeTruthy()
+
+    const volumeValues = chart.textContent
+    act(() => buttonWithText(container, 'Estimation agentic').click())
+    expect(chart.textContent).not.toBe(volumeValues)
+    expect(chart.textContent).not.toBe(initialValues)
+
+    act(() => buttonWithText(container, 'FCFA').click())
+    expect(chart.textContent).not.toBe(volumeValues)
+    expect(chart.querySelector('svg')?.getAttribute('aria-labelledby')).toBeTruthy()
+  })
+})
 
 describe('recherche de modèle dans l’application', () => {
   it('affiche tous les modèles au rendu initial (C1, C3)', () => {

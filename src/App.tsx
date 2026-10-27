@@ -14,6 +14,7 @@ import { AgenticSimulator } from './components/AgenticSimulator'
 import { PricingTable } from './components/PricingTable'
 import { BestValueCard } from './components/BestValueCard'
 import { ModelComparison } from './components/ModelComparison'
+import { MonthlyCostChart } from './components/MonthlyCostChart'
 
 type SimMode = 'volume' | 'agentic'
 
@@ -206,6 +207,19 @@ export default function App() {
               )}
             </div>
           </div>
+        </section>
+
+        <section
+          aria-labelledby="monthly-cost-chart-heading"
+          className="mt-8 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900"
+        >
+          <h2 id="monthly-cost-chart-heading" className="text-base font-semibold">
+            Coût mensuel par modèle
+          </h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Comparez le coût estimé de chaque modèle affiché pour l&apos;usage simulé.
+          </p>
+          <MonthlyCostChart breakdowns={displayedBreakdowns} currency={currency} />
         </section>
 
         <div className="mt-8">
