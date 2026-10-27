@@ -359,7 +359,7 @@ export default function App() {
               rel="noreferrer"
               className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-500"
             >
-              Code source sur GitHub
+              GitHub
             </a>
           </p>
           <p className="mt-3">

@@ -556,6 +556,23 @@ describe('pied de page', () => {
     expect(copyright?.className).toContain('text-slate-500')
     expect(copyright?.className).toContain('dark:text-slate-400')
   })
+
+  it('affiche un lien GitHub vers le dépôt du projet (C1)', () => {
+    const container = renderApp()
+    const footer = container.querySelector('footer')
+    const link = footer?.querySelector<HTMLAnchorElement>('a[href="https://github.com/quickscale-ai/llm-cost-lab"]')
+
+    expect(link?.textContent?.trim()).toBe('GitHub')
+    expect(link?.getAttribute('href')).toBe('https://github.com/quickscale-ai/llm-cost-lab')
+  })
+
+  it('ouvre le lien GitHub dans un nouvel onglet (C2)', () => {
+    const container = renderApp()
+    const footer = container.querySelector('footer')
+    const link = footer?.querySelector<HTMLAnchorElement>('a[href="https://github.com/quickscale-ai/llm-cost-lab"]')
+
+    expect(link?.getAttribute('target')).toBe('_blank')
+  })
 })
 
 describe('lien de retour en haut de page', () => {
