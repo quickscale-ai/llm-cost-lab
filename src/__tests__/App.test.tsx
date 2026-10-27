@@ -89,14 +89,22 @@ function tableRowForModel(container: HTMLDivElement, name: string) {
 }
 
 describe('recherche de modèle dans l’application', () => {
-  it('combine la recherche avec le fournisseur, conserve le résumé et l’échelle des barres, puis permet de l’effacer', () => {
+  it('affiche tous les modèles au rendu initial (C1, C3)', () => {
+    const container = renderApp()
+
+    expect(container.textContent).toContain('16 modèles affichés sur 16')
+  })
+
+  it('met à jour le compteur avec le fournisseur et la recherche, puis permet de l’effacer (C1, C2)', () => {
     const container = renderApp()
 
     act(() => buttonWithText(container, 'Mistral AI').click())
+    expect(container.textContent).toContain('2 modèles affichés sur 2')
     const recommendationBefore = container.querySelector('[role="region"]')?.textContent
     const smallRowBefore = tableRowForModel(container, 'Mistral Small 4')
     const barBefore = smallRowBefore?.querySelector<HTMLElement>('[style]')?.style.width
     const search = changeSearch(container, 'small')
+    expect(container.textContent).toContain('1 modèle affiché sur 2')
     const filteredTable = container.querySelector('table')
     expect(filteredTable?.textContent).toContain('Mistral Small 4')
     expect(filteredTable?.textContent).not.toContain('Mistral Large 3')
@@ -117,6 +125,7 @@ describe('recherche de modèle dans l’application', () => {
 
     expect(search.value).toBe('')
     expect(document.activeElement).toBe(search)
+    expect(container.textContent).toContain('2 modèles affichés sur 2')
     const tableAfterClear = container.querySelector('table')
     expect(tableAfterClear?.textContent).toContain('Mistral Large 3')
     expect(tableAfterClear?.textContent).toContain('Mistral Small 4')
@@ -129,6 +138,7 @@ describe('recherche de modèle dans l’application', () => {
 
     changeSearch(container, query)
 
+    expect(container.textContent).toContain('0 modèles affichés sur 16')
     expect(container.querySelector('table')).toBeNull()
     expect(container.querySelectorAll('[role="status"]')).toHaveLength(1)
     expect(container.querySelector('[role="status"]')?.textContent).toContain(query)
