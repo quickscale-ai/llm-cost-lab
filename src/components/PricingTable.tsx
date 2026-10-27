@@ -3,6 +3,8 @@ import type { CostBreakdown } from '../lib/pricing'
 import { maxTotalCost, costPerTask } from '../lib/pricing'
 import type { Currency } from '../lib/format'
 import { formatContextWindow, formatCurrency } from '../lib/format'
+import type { Language } from '../lib/i18n'
+import { translate } from '../lib/i18n'
 
 type SortKey = 'cost' | 'name' | 'input' | 'output' | 'context' | 'costPerTask'
 
@@ -15,16 +17,20 @@ interface Props {
   barCeiling?: number
   /** Message affiché quand les filtres ne retournent aucun modèle. */
   emptyMessage?: string
+  /** Langue des en-têtes du tableau. Le français est utilisé par défaut. */
+  language?: Language
 }
 
-const BASE_COLUMNS: { key: SortKey; label: string; align: 'left' | 'right' }[] = [
-  { key: 'name', label: 'Modèle', align: 'left' },
-  { key: 'input', label: '$ / M entrée', align: 'right' },
-  { key: 'output', label: '$ / M sortie', align: 'right' },
-  { key: 'context', label: 'Contexte', align: 'right' },
-  { key: 'cost', label: 'Coût total', align: 'right' },
-  { key: 'costPerTask', label: 'Coût / tâche', align: 'right' },
-]
+function getColumns(language: Language): { key: SortKey; label: string; align: 'left' | 'right' }[] {
+  return [
+    { key: 'name', label: translate(language, 'tableModel'), align: 'left' },
+    { key: 'input', label: translate(language, 'tableInput'), align: 'right' },
+    { key: 'output', label: translate(language, 'tableOutput'), align: 'right' },
+    { key: 'context', label: translate(language, 'tableContext'), align: 'right' },
+    { key: 'cost', label: translate(language, 'tableTotalCost'), align: 'right' },
+    { key: 'costPerTask', label: translate(language, 'tableCostPerTask'), align: 'right' },
+  ]
+}
 
 function sortValue(
   breakdown: CostBreakdown,
@@ -82,12 +88,19 @@ function CheapestBadge() {
   )
 }
 
-export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emptyMessage }: Props) {
+export function PricingTable({
+  breakdowns,
+  barCeiling,
+  currency,
+  tasksCount,
+  emptyMessage,
+  language = 'fr',
+}: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('cost')
   const [ascending, setAscending] = useState(true)
 
   const tasks = tasksCount ?? 0
-  const columns = BASE_COLUMNS.filter((col) => col.key !== 'costPerTask' || tasks > 0)
+  const columns = getColumns(language).filter((col) => col.key !== 'costPerTask' || tasks > 0)
 
   const sorted = useMemo(() => {
     return [...breakdowns].sort((a, b) => {
@@ -242,26 +255,26 @@ export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emp
               <CostBar ratio={ceiling > 0 ? breakdown.totalCost / ceiling : 0} />
               <dl className="tabular mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
                 <div className="flex gap-1">
-                  <dt>Entrée</dt>
+                  <dt>{translate(language, 'mobileInput')}</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
                     {formatCurrency(model.inputPerMTok, currency)}/M
                   </dd>
                 </div>
                 <div className="flex gap-1">
-                  <dt>Sortie</dt>
+                  <dt>{translate(language, 'mobileOutput')}</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
                     {formatCurrency(model.outputPerMTok, currency)}/M
                   </dd>
                 </div>
                 <div className="flex gap-1">
-                  <dt>Contexte</dt>
+                  <dt>{translate(language, 'mobileContext')}</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
                     {formatContextWindow(model.contextWindow)}
                   </dd>
                 </div>
                 {tasks > 0 && (
                   <div className="flex gap-1">
-                    <dt>/ tâche</dt>
+                    <dt>{translate(language, 'mobileCostPerTask')}</dt>
                     <dd className="font-semibold text-slate-700 dark:text-slate-300">
                       {formatCurrency(costPerTask(breakdown.totalCost, tasks), currency)}
                     </dd>

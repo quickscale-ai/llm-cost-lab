@@ -133,6 +133,39 @@ describe('mémorisation de la devise', () => {
   })
 })
 
+describe('sélecteur de langue', () => {
+  it('propose le français et l’anglais dans l’en-tête (C1)', () => {
+    const container = renderApp()
+    const languageGroup = container.querySelector('[role="group"][aria-label="Langue"]')
+
+    expect(languageGroup).toBeTruthy()
+    expect(buttonWithText(container, 'FR').getAttribute('aria-pressed')).toBe('true')
+    expect(buttonWithText(container, 'EN').getAttribute('aria-pressed')).toBe('false')
+  })
+
+  it('traduit le titre et les en-têtes du tableau, puis revient au français (C3)', () => {
+    const container = renderApp()
+    const tableHeaders = () =>
+      Array.from(container.querySelectorAll('table thead button')).map((button) => button.textContent ?? '')
+
+    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token')
+    expect(tableHeaders().some((header) => header.includes('Modèle'))).toBe(true)
+
+    act(() => buttonWithText(container, 'EN').click())
+
+    expect(container.querySelector('h1')?.textContent).toBe('Token Cost Comparator')
+    expect(tableHeaders().some((header) => header.includes('Model'))).toBe(true)
+    expect(tableHeaders().some((header) => header.includes('Total cost'))).toBe(true)
+    expect(container.textContent).toContain('Comparez le tarif des principaux modèles de langage')
+
+    act(() => buttonWithText(container, 'FR').click())
+
+    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token')
+    expect(tableHeaders().some((header) => header.includes('Coût total'))).toBe(true)
+  })
+})
+
+
 describe('parcours du comparateur', () => {
   it('présente la configuration, la comparaison puis les résultats dans cet ordre (C1)', () => {
     const container = renderApp()
