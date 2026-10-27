@@ -198,6 +198,21 @@ describe('en-tête de la page', () => {
   })
 })
 
+describe('carte de recommandation', () => {
+  it('explique que le modèle recommandé a le coût estimé le plus bas pour l’usage simulé (C1)', () => {
+    const container = renderApp()
+    const recommendation = container.querySelector('[role="region"][aria-label="Modèle recommandé"]')
+    if (!recommendation) throw new Error('Carte de recommandation introuvable')
+
+    const explanation = recommendation.querySelector('div + p')
+
+    expect(explanation?.textContent).toBe(
+      'Ce modèle est recommandé car il présente le coût estimé le plus bas pour l’usage simulé.',
+    )
+    expect(explanation?.previousElementSibling?.tagName).toBe('DIV')
+  })
+})
+
 describe('mise en évidence du modèle le moins cher', () => {
   it('affiche la pastille à côté du modèle le moins cher dans les vues tableau et mobile (C1)', () => {
     const container = renderApp()
