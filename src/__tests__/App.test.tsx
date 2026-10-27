@@ -5,7 +5,10 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { MODELS } from '../data/models'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
+import { formatCurrency } from '../lib/format'
+import { computeCost } from '../lib/pricing'
 
 const printStylesheet = readFileSync('src/index.css', 'utf8')
 
@@ -180,6 +183,15 @@ describe('recherche de modèle dans l’application', () => {
     expect(tableRowForModel(container, 'Mistral Small 4')?.querySelector<HTMLElement>('[style]')?.style.width).toBe(
       barBefore,
     )
+
+    act(() => buttonWithText(container, '10 K / 2 K').click())
+    const mistralSmall = MODELS.find((model) => model.id === 'mistral-small-4')
+    if (!mistralSmall) throw new Error('Modèle Mistral Small 4 introuvable')
+    const expectedRecommendationCost = computeCost(mistralSmall, {
+      inputTokens: 10_000,
+      outputTokens: 2_000,
+    })
+    expect(recommendation?.textContent).toContain(formatCurrency(expectedRecommendationCost.totalCost, 'USD'))
 
     expect(search.type).toBe('text')
     expect(search.inputMode).toBe('search')
