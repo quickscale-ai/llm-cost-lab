@@ -37,6 +37,10 @@ describe('costForTokens', () => {
     expect(costForTokens(1_000, 5)).toBeCloseTo(0.005, 10)
   })
 
+  it('conserve les petits coûts sans les arrondir à deux décimales (C1)', () => {
+    expect(costForTokens(300, 5)).toBeCloseTo(0.0015, 10)
+  })
+
   it('retourne 0 pour un volume nul', () => {
     expect(costForTokens(0, 25)).toBe(0)
   })
