@@ -1,10 +1,13 @@
 // @vitest-environment happy-dom
 
+import { readFileSync } from 'node:fs'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
+
+const printStylesheet = readFileSync('src/index.css', 'utf8')
 
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -157,10 +160,13 @@ describe('recherche de modèle dans l’application', () => {
 })
 
 describe('export du comparatif en PDF', () => {
-  it('marque le tableau affiché pour l’impression (C1)', () => {
+  it('marque le tableau affiché et masque le reste de la page à l’impression (C1)', () => {
     const container = renderApp()
 
     expect(container.querySelector('table')?.classList.contains('pricing-table-print')).toBe(true)
+    expect(printStylesheet).toContain('@media print')
+    expect(printStylesheet).toMatch(/body \*\s*\{[\s\S]*visibility: hidden !important/)
+    expect(printStylesheet).toMatch(/\.pricing-table-print,[\s\S]*visibility: visible !important/)
   })
 
   it('ajoute la date au titre avant d’ouvrir la boîte d’impression (C2)', () => {
