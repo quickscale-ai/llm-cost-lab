@@ -3,7 +3,9 @@
 base: main
 guardrail_paths:
   - ".dev-automation.yml"
+  - "src/data/**"
 cadrage:
   direct: true
+  max_lines: 200
   tech_leads:
     - HMohQuickscale
