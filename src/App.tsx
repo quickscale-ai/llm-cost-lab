@@ -61,7 +61,7 @@ export default function App() {
   const [language, setLanguage] = useState<Language>('fr')
 
   useEffect(() => {
-    document.title = `LLM Cost Lab — ${translate(language, 'pageTitle')}`
+    document.title = `LLM Cost Lab — ${translate(language, 'pageTitle')} · 2026`
   }, [language])
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
   const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())

@@ -28,7 +28,7 @@ afterEach(() => {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: defaultInnerWidth })
   window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
   window.location.hash = ''
-  document.title = 'LLM Cost Lab — Comparateur de coût par token'
+  document.title = 'LLM Cost Lab — Comparateur de coût par token · 2026'
   vi.restoreAllMocks()
   vi.useRealTimers()
   mountedRoot = undefined
@@ -211,12 +211,13 @@ describe('parcours du comparateur', () => {
 })
 
 describe('en-tête de la page', () => {
-  it('conserve le titre de l’onglet sans y ajouter le nombre de modèles (C1)', () => {
-    document.title = 'LLM Cost Lab — Comparateur de coût par token'
+  it('conserve le titre de l’onglet avec le suffixe de l’année (C1)', () => {
+    document.title = 'LLM Cost Lab — Comparateur de coût par token · 2026'
 
     renderApp()
 
-    expect(document.title).toBe('LLM Cost Lab — Comparateur de coût par token')
+    expect(document.title).toMatch(/ · 2026$/)
+    expect(document.title).not.toContain(`${MODELS.length} modèles`)
   })
 
   it('affiche le nombre de modèles comparés et le met à jour par fournisseur (C2)', () => {
