@@ -57,7 +57,11 @@ describe('filterModelsByName', () => {
   })
 
   it('retourne tous les modèles pour une recherche vide et conserve l’ordre', () => {
-    expect(filterModelsByName(models, '  ')).toBe(models)
+    expect(filterModelsByName(models, '  ').map((model) => model.id)).toEqual([
+      'mistral-large',
+      'etoile',
+      'small',
+    ])
   })
 
   it('retourne une liste vide sans correspondance', () => {
