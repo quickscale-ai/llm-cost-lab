@@ -132,8 +132,11 @@ export default function App() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 id="simulator-heading" className="text-base font-semibold">
-                Simulateur
+                1. Configurez votre simulation
               </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Choisissez le volume à estimer, puis les modèles à comparer et les résultats à consulter.
+              </p>
               {mode === 'volume' && (
                 <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
                   Soit{' '}
@@ -238,8 +241,11 @@ export default function App() {
 
         <section aria-labelledby="results-heading" className="mt-8">
           <h2 id="results-heading" className="text-base font-semibold">
-            Coût estimé, du moins cher au plus cher
+            3. Consultez les résultats
           </h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Retrouvez ici la recommandation et les coûts estimés pour les modèles actuellement filtrés.
+          </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <label htmlFor="model-search" className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Rechercher un modèle
@@ -286,7 +292,7 @@ export default function App() {
           </button>
           {displayedBreakdowns.length > 0 && (
             <div className="mt-4">
-              <BestValueCard breakdowns={breakdowns} currency={currency} />
+              <BestValueCard breakdowns={displayedBreakdowns} currency={currency} />
             </div>
           )}
           <div className="mt-4">
