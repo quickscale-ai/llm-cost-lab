@@ -227,6 +227,13 @@ export default function App() {
               )}
             </div>
           </div>
+          <p
+            aria-live="polite"
+            className="mt-3 text-sm text-slate-500 dark:text-slate-400"
+          >
+            {displayedBreakdowns.length}{' '}
+            {displayedBreakdowns.length === 1 ? 'modèle affiché' : 'modèles affichés'} sur {visibleModels.length}
+          </p>
           {displayedBreakdowns.length > 0 && (
             <div className="mt-4">
               <BestValueCard breakdowns={breakdowns} currency={currency} />
