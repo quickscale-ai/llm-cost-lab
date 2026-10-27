@@ -12,17 +12,9 @@ interface Props {
  * Carte de recommandation affichée au-dessus du tableau.
  *
  * Attend `breakdowns` triés du moins cher au plus cher (tels que retournés
- * par `rankByCost`). Affiche un état vide si la liste est vide.
+ * par `rankByCost`). N'est rendue que si la liste n'est pas vide.
  */
 export function BestValueCard({ breakdowns, currency }: Props) {
-  if (breakdowns.length === 0) {
-    return (
-      <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-        Aucun modèle ne correspond au filtre — la recommandation n'est pas disponible.
-      </div>
-    )
-  }
-
   // breakdowns est trié du moins cher au plus cher par rankByCost
   const best = breakdowns[0]
   if (!best) return null
