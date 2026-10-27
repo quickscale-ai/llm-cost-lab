@@ -59,10 +59,11 @@ export default function App() {
   const [agenticParams, setAgenticParams] = useState<AgenticParams>(DEFAULT_AGENTIC)
   const [currency, setCurrency] = useState<Currency>(readStoredCurrency)
   const [language, setLanguage] = useState<Language>('fr')
+  const pageTitle = translate(language, 'pageTitle')
 
   useEffect(() => {
-    document.title = `LLM Cost Lab — ${translate(language, 'pageTitle')} · 2026`
-  }, [language])
+    document.title = `LLM Cost Lab — ${pageTitle} · 2026`
+  }, [pageTitle])
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
   const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
   const [modelSearch, setModelSearch] = useState('')
@@ -153,7 +154,7 @@ export default function App() {
                 Quickscale AI
               </p>
               <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
-                {translate(language, 'pageTitle')}
+                {language === 'fr' ? `${pageTitle} €` : pageTitle}
               </h1>
             </div>
             <div

@@ -143,12 +143,12 @@ describe('sélecteur de langue', () => {
     expect(buttonWithText(container, 'EN').getAttribute('aria-pressed')).toBe('false')
   })
 
-  it('traduit le titre et les en-têtes du tableau, puis revient au français (C3)', () => {
+  it('traduit le titre et les en-têtes du tableau, puis revient au français (C1)', () => {
     const container = renderApp()
     const tableHeaders = () =>
       Array.from(container.querySelectorAll('table thead button')).map((button) => button.textContent ?? '')
 
-    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token')
+    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token €')
     expect(tableHeaders().some((header) => header.includes('Modèle'))).toBe(true)
 
     act(() => buttonWithText(container, 'EN').click())
@@ -160,7 +160,7 @@ describe('sélecteur de langue', () => {
 
     act(() => buttonWithText(container, 'FR').click())
 
-    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token')
+    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token €')
     expect(tableHeaders().some((header) => header.includes('Coût total'))).toBe(true)
   })
 })
