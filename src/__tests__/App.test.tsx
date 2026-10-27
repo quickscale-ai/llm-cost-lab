@@ -143,24 +143,31 @@ describe('sélecteur de langue', () => {
     expect(buttonWithText(container, 'EN').getAttribute('aria-pressed')).toBe('false')
   })
 
-  it('traduit le titre et les en-têtes du tableau, puis revient au français (C1)', () => {
+  it('traduit le titre et les en-têtes du tableau, puis revient au français (C1, C2, C3)', () => {
     const container = renderApp()
     const tableHeaders = () =>
       Array.from(container.querySelectorAll('table thead button')).map((button) => button.textContent ?? '')
 
-    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token €')
+    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token (2026) €')
+    expect(document.title).toBe('LLM Cost Lab — Comparateur de coût par token · 2026')
     expect(tableHeaders().some((header) => header.includes('Modèle'))).toBe(true)
 
     act(() => buttonWithText(container, 'EN').click())
 
     expect(container.querySelector('h1')?.textContent).toBe('Token Cost Comparator')
+    expect(container.querySelector('h1')?.textContent).not.toContain('(2026)')
+    expect(container.querySelector('h1')?.textContent).not.toContain('€')
+    expect(document.title).toBe('LLM Cost Lab — Token Cost Comparator · 2026')
+    expect(document.title).not.toContain('(2026)')
     expect(tableHeaders().some((header) => header.includes('Model'))).toBe(true)
     expect(tableHeaders().some((header) => header.includes('Total cost'))).toBe(true)
     expect(container.textContent).toContain('Comparez le tarif des principaux modèles de langage')
 
     act(() => buttonWithText(container, 'FR').click())
 
-    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token €')
+    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token (2026) €')
+    expect(document.title).toBe('LLM Cost Lab — Comparateur de coût par token · 2026')
+    expect(document.title).not.toContain('(2026)')
     expect(tableHeaders().some((header) => header.includes('Coût total'))).toBe(true)
   })
 })
@@ -211,7 +218,7 @@ describe('parcours du comparateur', () => {
 })
 
 describe('en-tête de la page', () => {
-  it('conserve le titre de l’onglet avec le suffixe de l’année (C1)', () => {
+  it('conserve le titre de l’onglet avec le suffixe de l’année (C3)', () => {
     document.title = 'LLM Cost Lab — Comparateur de coût par token · 2026'
 
     renderApp()

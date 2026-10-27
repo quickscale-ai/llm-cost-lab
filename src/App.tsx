@@ -154,7 +154,7 @@ export default function App() {
                 Quickscale AI
               </p>
               <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
-                {language === 'fr' ? `${pageTitle} €` : pageTitle}
+                {language === 'fr' ? `${pageTitle} (2026) €` : pageTitle}
               </h1>
             </div>
             <div
