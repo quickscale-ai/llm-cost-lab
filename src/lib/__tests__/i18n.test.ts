@@ -10,6 +10,8 @@ describe('traductions de l’interface', () => {
     expect(translations.en.pageHeading).toBe('Token Cost Comparator')
     expect(translations.fr.tableModel).toBe('Modèle')
     expect(translations.en.tableModel).toBe('Model')
+    expect(translations.fr.tableContext).toBe('Fenêtre de contexte')
+    expect(translations.en.tableContext).toBe('Context')
   })
 
   it('retourne le texte de la langue demandée', () => {
