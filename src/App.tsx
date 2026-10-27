@@ -337,6 +337,7 @@ export default function App() {
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
             {visibleProviderCount} fournisseur{visibleProviderCount === 1 ? '' : 's'} comparé{visibleProviderCount === 1 ? '' : 's'}
           </p>
+          <p className="mt-3 text-slate-500 dark:text-slate-400">© 2026 LLM Cost Lab</p>
           <p className="mt-3">
             Tarifs publics vérifiés le{' '}
             <strong className="font-semibold text-slate-700 dark:text-slate-300">
