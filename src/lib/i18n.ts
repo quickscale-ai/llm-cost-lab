@@ -4,6 +4,7 @@ export type Language = (typeof SUPPORTED_LANGUAGES)[number]
 
 export type TranslationKey =
   | 'pageTitle'
+  | 'pageHeading'
   | 'tableModel'
   | 'tableInput'
   | 'tableOutput'
@@ -18,6 +19,7 @@ export type TranslationKey =
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   fr: {
     pageTitle: 'Comparateur de coût par token',
+    pageHeading: 'Comparateur de prix des LLM',
     tableModel: 'Modèle',
     tableInput: '$ / M entrée',
     tableOutput: '$ / M sortie',
@@ -31,6 +33,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
   },
   en: {
     pageTitle: 'Token Cost Comparator',
+    pageHeading: 'Token Cost Comparator',
     tableModel: 'Model',
     tableInput: '$ / M input',
     tableOutput: '$ / M output',

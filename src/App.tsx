@@ -60,6 +60,7 @@ export default function App() {
   const [currency, setCurrency] = useState<Currency>(readStoredCurrency)
   const [language, setLanguage] = useState<Language>('fr')
   const pageTitle = translate(language, 'pageTitle')
+  const pageHeading = translate(language, 'pageHeading')
 
   useEffect(() => {
     document.title = `LLM Cost Lab — ${pageTitle} · 2026`
@@ -154,7 +155,7 @@ export default function App() {
                 Quickscale AI
               </p>
               <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
-                {language === 'fr' ? `${pageTitle} (2026) €` : pageTitle}
+                {language === 'fr' ? `${pageHeading} €` : pageHeading}
               </h1>
             </div>
             <div

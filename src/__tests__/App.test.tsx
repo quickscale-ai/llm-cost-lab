@@ -148,7 +148,7 @@ describe('sélecteur de langue', () => {
     const tableHeaders = () =>
       Array.from(container.querySelectorAll('table thead button')).map((button) => button.textContent ?? '')
 
-    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token (2026) €')
+    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de prix des LLM €')
     expect(document.title).toBe('LLM Cost Lab — Comparateur de coût par token · 2026')
     expect(tableHeaders().some((header) => header.includes('Modèle'))).toBe(true)
 
@@ -165,7 +165,7 @@ describe('sélecteur de langue', () => {
 
     act(() => buttonWithText(container, 'FR').click())
 
-    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token (2026) €')
+    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de prix des LLM €')
     expect(document.title).toBe('LLM Cost Lab — Comparateur de coût par token · 2026')
     expect(document.title).not.toContain('(2026)')
     expect(tableHeaders().some((header) => header.includes('Coût total'))).toBe(true)
