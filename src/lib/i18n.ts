@@ -23,7 +23,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     tableModel: 'Modèle',
     tableInput: '$ / M entrée',
     tableOutput: '$ / M sortie',
-    tableContext: 'Contexte',
+    tableContext: 'Fenêtre de contexte',
     tableTotalCost: 'Coût total',
     tableCostPerTask: 'Coût / tâche',
     mobileInput: 'Entrée',
