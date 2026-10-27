@@ -58,6 +58,9 @@ export function BestValueCard({ breakdowns, currency }: Props) {
           )}
         </div>
       </div>
+      <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+        Ce modèle est recommandé car il présente le coût estimé le plus bas pour l’usage simulé.
+      </p>
     </div>
   )
 }
