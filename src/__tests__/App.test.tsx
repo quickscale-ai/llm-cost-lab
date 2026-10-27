@@ -310,6 +310,28 @@ describe('graphique des coûts mensuels', () => {
   })
 })
 
+
+describe('compteur de fournisseurs comparés', () => {
+  it('affiche le nombre de fournisseurs distincts dans le pied de page, pas dans l’en-tête (C1)', () => {
+    const container = renderApp()
+    const header = container.querySelector('header')
+    const footer = container.querySelector('footer')
+
+    expect(footer?.textContent).toContain('7 fournisseurs comparés')
+    expect(header?.textContent).not.toContain('fournisseurs comparés')
+  })
+
+  it('met à jour le nombre affiché lorsqu’un filtre de fournisseur est activé (C1)', () => {
+    const container = renderApp()
+    const footer = container.querySelector('footer')
+
+    expect(footer?.textContent).toContain('7 fournisseurs comparés')
+    act(() => buttonWithText(container, 'Mistral AI').click())
+    expect(footer?.textContent).toContain('1 fournisseur comparé')
+    expect(footer?.textContent).not.toContain('7 fournisseurs comparés')
+  })
+})
+
 describe('recherche de modèle dans l’application', () => {
   it('affiche tous les modèles au rendu initial (C1, C3)', () => {
     const container = renderApp()

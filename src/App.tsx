@@ -52,6 +52,7 @@ export default function App() {
     if (selectedProviders.size === 0) return MODELS
     return MODELS.filter((model) => selectedProviders.has(model.provider))
   }, [selectedProviders])
+  const visibleProviderCount = new Set(visibleModels.map((model) => model.provider)).size
 
   const selectedComparisonModels = useMemo(() => {
     const first = visibleModels.find((model) => model.id === comparisonSelection[0]) ?? visibleModels[0]
@@ -333,7 +334,10 @@ export default function App() {
         </section>
 
         <footer className="mt-12 border-t border-slate-200 pt-6 text-xs leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
-          <p>
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {visibleProviderCount} fournisseur{visibleProviderCount === 1 ? '' : 's'} comparé{visibleProviderCount === 1 ? '' : 's'}
+          </p>
+          <p className="mt-3">
             Tarifs publics vérifiés le{' '}
             <strong className="font-semibold text-slate-700 dark:text-slate-300">
               {formatDate(PRICING_VERIFIED_AT)}
