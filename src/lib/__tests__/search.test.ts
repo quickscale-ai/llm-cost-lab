@@ -30,11 +30,24 @@ const models: Model[] = [
     contextWindow: 128_000,
     source: 'https://example.test/small',
   },
+  {
+    id: 'flash-lite',
+    name: 'Gemini 3.5 Flash-Lite',
+    provider: 'Google',
+    inputPerMTok: 1,
+    outputPerMTok: 3,
+    contextWindow: 128_000,
+    source: 'https://example.test/flash-lite',
+  },
 ]
 
 describe('normalizeSearchText', () => {
   it('ignore la casse et les accents', () => {
     expect(normalizeSearchText('ÉTOILE')).toBe('etoile')
+  })
+
+  it('uniformise les espaces et les tirets', () => {
+    expect(normalizeSearchText('  Flash   - Lite  ')).toBe('flash lite')
   })
 })
 
@@ -61,7 +74,12 @@ describe('filterModelsByName', () => {
       'mistral-large',
       'etoile',
       'small',
+      'flash-lite',
     ])
+  })
+
+  it('traite les tirets comme des espaces dans la recherche', () => {
+    expect(filterModelsByName(models, 'flash lite').map((model) => model.id)).toEqual(['flash-lite'])
   })
 
   it('retourne une liste vide sans correspondance', () => {

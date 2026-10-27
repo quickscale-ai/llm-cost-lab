@@ -11,6 +11,8 @@ interface Props {
   currency: Currency
   /** Si fourni, affiche une colonne « Coût / tâche » calculée sur ce nombre de tâches. */
   tasksCount?: number
+  /** Référence commune utilisée pour dimensionner les barres de coût. */
+  barCeiling?: number
   /** Message affiché quand les filtres ne retournent aucun modèle. */
   emptyMessage?: string
 }
@@ -69,7 +71,7 @@ function TierNote({ note }: { note: string }) {
   )
 }
 
-export function PricingTable({ breakdowns, currency, tasksCount, emptyMessage }: Props) {
+export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emptyMessage }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('cost')
   const [ascending, setAscending] = useState(true)
 
@@ -88,7 +90,7 @@ export function PricingTable({ breakdowns, currency, tasksCount, emptyMessage }:
     })
   }, [breakdowns, sortKey, ascending, tasks])
 
-  const ceiling = maxTotalCost(breakdowns)
+  const ceiling = barCeiling ?? maxTotalCost(breakdowns)
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -101,7 +103,10 @@ export function PricingTable({ breakdowns, currency, tasksCount, emptyMessage }:
 
   if (breakdowns.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      <p
+        role="status"
+        className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400"
+      >
         {emptyMessage ?? 'Aucun modèle ne correspond au filtre sélectionné.'}
       </p>
     )
