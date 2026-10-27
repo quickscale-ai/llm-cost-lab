@@ -87,6 +87,11 @@ export default function App() {
     })
   }
 
+  function resetFilters() {
+    setSelectedProviders(new Set())
+    setModelSearch('')
+  }
+
   function changeCurrency(nextCurrency: Currency) {
     setCurrency(nextCurrency)
     storeCurrency(nextCurrency)
@@ -183,12 +188,23 @@ export default function App() {
           </div>
 
           <div className="mt-6 border-t border-slate-200 pt-5 dark:border-slate-800">
-            <ProviderFilter
-              providers={PROVIDERS}
-              selected={selectedProviders}
-              onToggle={toggleProvider}
-              onReset={() => setSelectedProviders(new Set())}
-            />
+            <div className="flex flex-wrap items-end gap-3">
+              <ProviderFilter
+                providers={PROVIDERS}
+                selected={selectedProviders}
+                onToggle={toggleProvider}
+                onReset={() => setSelectedProviders(new Set())}
+              />
+              {(selectedProviders.size > 0 || modelSearch.trim() !== '') && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-slate-100"
+                >
+                  Réinitialiser les filtres
+                </button>
+              )}
+            </div>
           </div>
         </section>
 

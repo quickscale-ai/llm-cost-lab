@@ -159,6 +159,46 @@ describe('recherche de modèle dans l’application', () => {
   })
 })
 
+describe('réinitialisation globale des filtres', () => {
+  function resetButton(container: HTMLDivElement) {
+    return Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Réinitialiser les filtres',
+    )
+  }
+
+  it('affiche le bouton uniquement lorsqu’un fournisseur ou une recherche est actif (C2)', () => {
+    const container = renderApp()
+
+    expect(resetButton(container)).toBeUndefined()
+
+    act(() => buttonWithText(container, 'Mistral AI').click())
+    expect(resetButton(container)).toBeTruthy()
+
+    act(() => buttonWithText(container, 'Réinitialiser les filtres').click())
+    expect(resetButton(container)).toBeUndefined()
+
+    changeSearch(container, 'small')
+    expect(resetButton(container)).toBeTruthy()
+  })
+
+  it('remet les deux filtres à zéro et restaure le tableau complet (C1, C3)', () => {
+    const container = renderApp()
+
+    act(() => buttonWithText(container, 'Mistral AI').click())
+    changeSearch(container, 'small')
+    expect(container.textContent).toContain('1 modèle affiché sur 2')
+
+    act(() => buttonWithText(container, 'Réinitialiser les filtres').click())
+
+    const allProvidersButton = buttonWithText(container, 'Tous')
+    expect(allProvidersButton.getAttribute('aria-pressed')).toBe('true')
+    expect(container.querySelector<HTMLInputElement>('#model-search')?.value).toBe('')
+    expect(container.textContent).toContain('16 modèles affichés sur 16')
+    expect(container.querySelectorAll('tbody tr')).toHaveLength(16)
+    expect(resetButton(container)).toBeUndefined()
+  })
+})
+
 describe('export du comparatif en PDF', () => {
   it('marque le tableau affiché et masque le reste de la page à l’impression (C1)', () => {
     const container = renderApp()
