@@ -5,8 +5,10 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { PricingTable } from '../components/PricingTable'
 import { MODELS } from '../data/models'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
+import type { CostBreakdown } from '../lib/pricing'
 import { computeCost } from '../lib/pricing'
 import { formatCurrency } from '../lib/format'
 import { MonthlyCostChart } from '../components/MonthlyCostChart'
@@ -38,6 +40,16 @@ function renderApp() {
   document.body.append(mountedContainer)
   mountedRoot = createRoot(mountedContainer)
   act(() => mountedRoot?.render(<App />))
+  return mountedContainer
+}
+
+function renderPricingTable(breakdowns: CostBreakdown[]) {
+  mountedContainer = document.createElement('div')
+  document.body.append(mountedContainer)
+  mountedRoot = createRoot(mountedContainer)
+  act(() =>
+    mountedRoot?.render(<PricingTable breakdowns={breakdowns} currency="USD" />),
+  )
   return mountedContainer
 }
 
@@ -154,6 +166,53 @@ describe('parcours du comparateur', () => {
     act(() => buttonWithText(container, 'EUR').click())
     expect(comparisonSection.textContent).not.toBe(costsBeforeCurrencyChange)
     expect(comparisonSection.textContent).toContain('€')
+  })
+})
+
+describe('mise en évidence du modèle le moins cher', () => {
+  it('affiche la pastille à côté du modèle le moins cher dans les vues tableau et mobile (C1)', () => {
+    const container = renderApp()
+    const table = container.querySelector('table')
+    const mobileList = container.querySelector('ul')
+    if (!table || !mobileList) throw new Error('Vues tarifaires introuvables')
+
+    const tableBadges = table.querySelectorAll<HTMLElement>('[aria-label="Le moins cher"]')
+    const mobileBadges = mobileList.querySelectorAll<HTMLElement>('[aria-label="Le moins cher"]')
+    expect(tableBadges).toHaveLength(1)
+    expect(mobileBadges).toHaveLength(1)
+    const tableBadge = tableBadges[0]
+    const mobileBadge = mobileBadges[0]
+    expect(tableBadge?.textContent).toBe('Le moins cher')
+    expect(mobileBadge?.textContent).toBe('Le moins cher')
+    expect(tableBadge?.parentElement?.textContent).toContain('Mistral Small 4')
+    expect(mobileBadge?.parentElement?.textContent).toContain('Mistral Small 4')
+  })
+
+  it('ne surligne pas la ligne du modèle le moins cher et conserve le survol (C2)', () => {
+    const container = renderApp()
+    const rows = Array.from(container.querySelectorAll<HTMLTableRowElement>('tbody tr'))
+    const cheapestRow = rows.find((row) => row.querySelector('[aria-label="Le moins cher"]'))
+    if (!cheapestRow) throw new Error('Ligne du modèle le moins cher introuvable')
+
+    expect(cheapestRow.className).toContain('hover:bg-slate-50')
+    expect(cheapestRow.className).not.toMatch(/emerald|brand-50/)
+    expect(rows.every((row) => row.className === cheapestRow.className)).toBe(true)
+  })
+
+  it('affiche la pastille sur chaque modèle en cas d’égalité, y compris à zéro (C3)', () => {
+    const tiedBreakdowns: CostBreakdown[] = MODELS.slice(0, 2).map((model) => ({
+      model,
+      inputCost: 0,
+      outputCost: 0,
+      totalCost: 0,
+    }))
+    const container = renderPricingTable(tiedBreakdowns)
+    const table = container.querySelector('table')
+    const mobileList = container.querySelector('ul')
+    if (!table || !mobileList) throw new Error('Vues tarifaires introuvables')
+
+    expect(table.querySelectorAll('[aria-label="Le moins cher"]')).toHaveLength(2)
+    expect(mobileList.querySelectorAll('[aria-label="Le moins cher"]')).toHaveLength(2)
   })
 })
 

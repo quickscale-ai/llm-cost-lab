@@ -71,6 +71,17 @@ function TierNote({ note }: { note: string }) {
   )
 }
 
+function CheapestBadge() {
+  return (
+    <span
+      aria-label="Le moins cher"
+      className="ml-2 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] leading-tight font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+    >
+      Le moins cher
+    </span>
+  )
+}
+
 export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emptyMessage }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('cost')
   const [ascending, setAscending] = useState(true)
@@ -91,6 +102,7 @@ export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emp
   }, [breakdowns, sortKey, ascending, tasks])
 
   const ceiling = barCeiling ?? maxTotalCost(breakdowns)
+  const cheapestCost = Math.min(...breakdowns.map((breakdown) => breakdown.totalCost))
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -150,6 +162,7 @@ export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emp
         <tbody>
           {sorted.map((breakdown) => {
             const { model } = breakdown
+            const isCheapest = breakdown.totalCost === cheapestCost
             return (
               <tr
                 key={model.id}
@@ -158,6 +171,7 @@ export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emp
                 <td className="py-2.5 pr-4">
                   <div className="font-medium text-slate-900 dark:text-slate-50">
                     {model.name}
+                    {isCheapest ? <CheapestBadge /> : null}
                     {model.tierNote ? <TierNote note={model.tierNote} /> : null}
                   </div>
                   <a
@@ -199,6 +213,7 @@ export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emp
       <ul className="space-y-2 md:hidden">
         {sorted.map((breakdown) => {
           const { model } = breakdown
+          const isCheapest = breakdown.totalCost === cheapestCost
           return (
             <li
               key={model.id}
@@ -208,6 +223,7 @@ export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emp
                 <div className="min-w-0">
                   <div className="truncate font-medium text-slate-900 dark:text-slate-50">
                     {model.name}
+                    {isCheapest ? <CheapestBadge /> : null}
                     {model.tierNote ? <TierNote note={model.tierNote} /> : null}
                   </div>
                   <a
