@@ -170,7 +170,7 @@ describe('sélecteur de langue', () => {
     expect(container.querySelector('h1')?.textContent).toBe('Comparateur LLM €')
     expect(document.title).toBe('LLM Cost Lab — Comparateur de coût par token · 2026')
     expect(document.title).not.toContain('(2026)')
-    expect(tableHeaders().some((header) => header.includes('Coût total'))).toBe(true)
+    expect(tableHeaders().some((header) => header.includes('Coût global'))).toBe(true)
   })
 })
 

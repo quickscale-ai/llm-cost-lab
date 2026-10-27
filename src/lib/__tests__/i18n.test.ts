@@ -14,8 +14,8 @@ describe('traductions de l’interface', () => {
     expect(translations.en.tableContext).toBe('Context')
   })
 
-  it('retourne le texte de la langue demandée', () => {
-    expect(translate('fr', 'tableTotalCost')).toBe('Coût total')
+  it('retourne le texte de la langue demandée (C1)', () => {
+    expect(translate('fr', 'tableTotalCost')).toBe('Coût global')
     expect(translate('en', 'tableTotalCost')).toBe('Total cost')
   })
 })
