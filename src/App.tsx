@@ -148,7 +148,7 @@ export default function App() {
             Comparateur de coût par token
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-            Comparez le tarif des principaux modèles de langage et estimez ce que coûterait
+            {visibleModels.length} {visibleModels.length === 1 ? 'modèle comparé' : 'modèles comparés'}. Comparez le tarif des principaux modèles de langage et estimez ce que coûterait
             réellement votre usage. Tarifs publics, saisis à la main et datés.
           </p>
         </header>

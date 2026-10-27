@@ -177,6 +177,27 @@ describe('parcours du comparateur', () => {
   })
 })
 
+describe('en-tête de la page', () => {
+  it('conserve le titre de l’onglet sans y ajouter le nombre de modèles (C1)', () => {
+    document.title = 'LLM Cost Lab — Comparateur de coût par token'
+
+    renderApp()
+
+    expect(document.title).toBe('LLM Cost Lab — Comparateur de coût par token')
+  })
+
+  it('affiche le nombre de modèles comparés et le met à jour par fournisseur (C2)', () => {
+    const container = renderApp()
+    const subtitle = container.querySelector('header > p:last-of-type')
+
+    expect(subtitle?.textContent).toContain(`${MODELS.length} modèles comparés`)
+
+    act(() => buttonWithText(container, 'Mistral AI').click())
+
+    expect(subtitle?.textContent).toContain('2 modèles comparés')
+  })
+})
+
 describe('mise en évidence du modèle le moins cher', () => {
   it('affiche la pastille à côté du modèle le moins cher dans les vues tableau et mobile (C1)', () => {
     const container = renderApp()
