@@ -9,6 +9,7 @@ import { MODELS } from '../data/models'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
 import { computeCost } from '../lib/pricing'
 import { formatCurrency } from '../lib/format'
+import { MonthlyCostChart } from '../components/MonthlyCostChart'
 
 const printStylesheet = readFileSync('src/index.css', 'utf8')
 
@@ -123,15 +124,36 @@ describe('graphique des coûts mensuels', () => {
     expect(chart.querySelector('svg')?.getAttribute('aria-labelledby')).toBe(
       'monthly-cost-chart-title monthly-cost-chart-description',
     )
-    expect(chart.querySelectorAll('[data-model-id]')).toHaveLength(16)
-    const firstModel = MODELS[0]
-    if (!firstModel) throw new Error('Modèle de test introuvable')
-    const expectedCost = formatCurrency(
-      computeCost(firstModel, { inputTokens: 100_000, outputTokens: 20_000 }).totalCost,
-      'USD',
-    )
-    expect(chart.querySelector('[data-model-id="claude-fable-5-1"]')?.textContent).toContain('Claude Fable 5.1')
-    expect(chart.querySelector('[data-model-id="claude-fable-5-1"]')?.textContent).toContain(expectedCost)
+    expect(chart.querySelectorAll('[data-model-id]')).toHaveLength(MODELS.length)
+    const usage = { inputTokens: 100_000, outputTokens: 20_000 }
+    for (const model of MODELS) {
+      const group = chart.querySelector(`[data-model-id="${model.id}"]`)
+      const expectedCost = computeCost(model, usage).totalCost
+
+      expect(group).toBeTruthy()
+      expect(group?.querySelector('rect[data-cost]')?.getAttribute('data-cost')).toBe(String(expectedCost))
+      expect(group?.textContent).toContain(formatCurrency(expectedCost, 'USD'))
+    }
+  })
+
+  it('tronque les noms longs sans masquer leur intitulé complet', () => {
+    const model = MODELS[0]
+    if (!model) throw new Error('Modèle de test introuvable')
+    const longName = 'Modèle de langage avec un nom particulièrement long pour mobile'
+    const longModel = { ...model, name: longName }
+    const breakdown = computeCost(longModel, { inputTokens: 100_000, outputTokens: 20_000 })
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 360 })
+
+    mountedContainer = document.createElement('div')
+    document.body.append(mountedContainer)
+    mountedRoot = createRoot(mountedContainer)
+    act(() => mountedRoot?.render(<MonthlyCostChart breakdowns={[breakdown]} currency="USD" />))
+
+    const group = mountedContainer.querySelector('[data-model-id]')
+    const label = group?.querySelector('text')
+    expect(label?.textContent).toBe('Modèle de langage…')
+    expect(label?.getAttribute('clip-path')).toBe('url(#monthly-cost-chart-label-clip-claude-fable-5-1)')
+    expect(group?.querySelector('title')?.textContent).toContain(longName)
   })
 
   it('conserve une taille de texte lisible sur mobile sans élargir le graphique', () => {

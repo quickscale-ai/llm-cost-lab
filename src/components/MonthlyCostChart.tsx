@@ -11,13 +11,20 @@ interface Props {
 
 const DESKTOP_CHART_WIDTH = 760
 const DESKTOP_LABEL_WIDTH = 220
+const DESKTOP_LABEL_MAX_CHARS = 28
 const DESKTOP_BAR_WIDTH = 430
 const DESKTOP_VALUE_X = DESKTOP_LABEL_WIDTH + DESKTOP_BAR_WIDTH + 16
 const MOBILE_CHART_WIDTH = 360
 const MOBILE_LABEL_WIDTH = 150
+const MOBILE_LABEL_MAX_CHARS = 18
 const MOBILE_BAR_WIDTH = 92
 const MOBILE_VALUE_X = MOBILE_LABEL_WIDTH + MOBILE_BAR_WIDTH + 12
 const ROW_HEIGHT = 48
+
+function truncateLabel(label: string, maxChars: number): string {
+  if (label.length <= maxChars) return label
+  return `${label.slice(0, maxChars - 1).trimEnd()}…`
+}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640)
@@ -58,6 +65,7 @@ export function MonthlyCostChart({ breakdowns, currency }: Props) {
           const y = index * ROW_HEIGHT + 10
           const calculatedBarWidth = ceiling > 0 ? (totalCost / ceiling) * barWidth : 0
           const value = formatCurrency(totalCost, currency)
+          const label = truncateLabel(model.name, isMobile ? MOBILE_LABEL_MAX_CHARS : DESKTOP_LABEL_MAX_CHARS)
 
           return (
             <g
@@ -65,13 +73,19 @@ export function MonthlyCostChart({ breakdowns, currency }: Props) {
               data-model-id={model.id}
               aria-label={`${model.name} : ${value}`}
             >
+              <defs>
+                <clipPath id={`monthly-cost-chart-label-clip-${model.id}`}>
+                  <rect x="0" y={y} width={labelWidth} height={ROW_HEIGHT} />
+                </clipPath>
+              </defs>
               <title>{`${model.name} : ${value}`}</title>
               <text
                 x="0"
                 y={y + 20}
+                clipPath={`url(#monthly-cost-chart-label-clip-${model.id})`}
                 className="fill-slate-700 text-[14px] dark:fill-slate-300"
               >
-                {model.name}
+                {label}
               </text>
               <rect
                 x={labelWidth}
