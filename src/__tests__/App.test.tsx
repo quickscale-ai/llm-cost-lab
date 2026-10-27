@@ -17,9 +17,12 @@ const printStylesheet = readFileSync('src/index.css', 'utf8')
 let mountedRoot: Root | undefined
 let mountedContainer: HTMLDivElement | undefined
 
+const defaultInnerWidth = window.innerWidth
+
 afterEach(() => {
   if (mountedRoot) act(() => mountedRoot?.unmount())
   mountedContainer?.remove()
+  Object.defineProperty(window, 'innerWidth', { configurable: true, value: defaultInnerWidth })
   window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
   document.title = 'LLM Cost Lab — Comparateur de coût par token'
   vi.restoreAllMocks()
@@ -129,6 +132,16 @@ describe('graphique des coûts mensuels', () => {
     )
     expect(chart.querySelector('[data-model-id="claude-fable-5-1"]')?.textContent).toContain('Claude Fable 5.1')
     expect(chart.querySelector('[data-model-id="claude-fable-5-1"]')?.textContent).toContain(expectedCost)
+  })
+
+  it('conserve une taille de texte lisible sur mobile sans élargir le graphique', () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 360 })
+    const container = renderApp()
+    const svg = monthlyChart(container).querySelector('svg')
+
+    expect(svg?.getAttribute('viewBox')).toMatch(/^0 0 360 /)
+    expect(svg?.querySelector('text')?.getAttribute('textLength')).toBeNull()
+    expect(svg?.querySelector('text')?.getAttribute('class')).toContain('text-[14px]')
   })
 
   it('suit les filtres, le mode de simulation et la devise (C3, C4)', () => {
