@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Provider } from './data/models'
 import { MODELS, PROVIDERS, PRICING_VERIFIED_AT, FX_RATE_DATE, USD_TO_XOF } from './data/models'
 import type { Usage, AgenticParams } from './lib/pricing'
@@ -8,6 +8,7 @@ import { formatDate, formatTokens } from './lib/format'
 import { readStoredCurrency, storeCurrency } from './lib/currencyPreference'
 import { filterModelsByName } from './lib/search'
 import { buildPricingCsv, downloadCsv } from './lib/csv'
+import { SUPPORTED_LANGUAGES, translate, type Language } from './lib/i18n'
 import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
 import { VolumeSimulator } from './components/VolumeSimulator'
@@ -57,6 +58,11 @@ export default function App() {
   const [usage, setUsage] = useState<Usage>(DEFAULT_USAGE)
   const [agenticParams, setAgenticParams] = useState<AgenticParams>(DEFAULT_AGENTIC)
   const [currency, setCurrency] = useState<Currency>(readStoredCurrency)
+  const [language, setLanguage] = useState<Language>('fr')
+
+  useEffect(() => {
+    document.title = `LLM Cost Lab — ${translate(language, 'pageTitle')}`
+  }, [language])
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
   const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
   const [modelSearch, setModelSearch] = useState('')
@@ -141,12 +147,40 @@ export default function App() {
     >
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
         <header>
-          <p className="text-xs font-semibold tracking-[0.18em] text-brand-600 uppercase dark:text-brand-500">
-            Quickscale AI
-          </p>
-          <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
-            Comparateur de coût par token
-          </h1>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] text-brand-600 uppercase dark:text-brand-500">
+                Quickscale AI
+              </p>
+              <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
+                {translate(language, 'pageTitle')}
+              </h1>
+            </div>
+            <div
+              role="group"
+              aria-label="Langue"
+              className="inline-flex rounded-lg border border-slate-300 bg-slate-100 p-0.5 dark:border-slate-700 dark:bg-slate-800"
+            >
+              {SUPPORTED_LANGUAGES.map((option) => {
+                const selected = option === language
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setLanguage(option)}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
+                      selected
+                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-slate-50'
+                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
+                    }`}
+                  >
+                    {option.toUpperCase()}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
           <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
             {visibleModels.length} {visibleModels.length === 1 ? 'modèle comparé' : 'modèles comparés'}. Comparez le tarif des principaux modèles de langage et estimez ce que coûterait
             réellement votre usage. Tarifs publics, saisis à la main et datés.
@@ -342,6 +376,7 @@ export default function App() {
               barCeiling={maxTotalCost(breakdowns)}
               currency={currency}
               tasksCount={mode === 'agentic' ? agenticParams.tasks : undefined}
+              language={language}
               emptyMessage={
                 modelSearch.trim() !== ''
                   ? `Aucun modèle ne correspond à « ${modelSearch.trim()} ».`
