@@ -1,0 +1,9 @@
+# Règles de dev-automation pour ce dépôt. Ce fichier est interdit à l'agent de code,
+# et toute PR qui le modifie attend une relecture humaine.
+base: main
+guardrail_paths:
+  - ".dev-automation.yml"
+cadrage:
+  direct: true
+  tech_leads:
+    - HMohQuickscale
