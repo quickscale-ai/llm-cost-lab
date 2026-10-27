@@ -386,6 +386,14 @@ export default function App() {
                   : 'Aucun modèle ne correspond au filtre fournisseur sélectionné.'
               }
             />
+            <p className="mt-3">
+              <a
+                href="#page-top"
+                className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-500"
+              >
+                Haut de page
+              </a>
+            </p>
           </div>
           <PricingVerificationNotice verifiedAt={PRICING_VERIFIED_AT} />
         </section>
@@ -414,14 +422,6 @@ export default function App() {
               className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-500"
             >
               GitHub
-            </a>
-          </p>
-          <p className="mt-3">
-            <a
-              href="#page-top"
-              className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-500"
-            >
-              Haut de page
             </a>
           </p>
         </footer>
