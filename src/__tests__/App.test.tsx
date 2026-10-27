@@ -535,6 +535,29 @@ describe('export du comparatif en PDF', () => {
   })
 })
 
+describe('pied de page', () => {
+  it('affiche exactement le copyright sur une seule ligne (C1)', () => {
+    const container = renderApp()
+    const footer = container.querySelector('footer')
+    const copyright = Array.from(footer?.querySelectorAll('p') ?? []).find(
+      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab',
+    )
+
+    expect(copyright?.textContent?.trim()).toBe('© 2026 LLM Cost Lab')
+  })
+
+  it('utilise des couleurs lisibles dans les thèmes clair et sombre (C2)', () => {
+    const container = renderApp()
+    const footer = container.querySelector('footer')
+    const copyright = Array.from(footer?.querySelectorAll('p') ?? []).find(
+      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab',
+    )
+
+    expect(copyright?.className).toContain('text-slate-500')
+    expect(copyright?.className).toContain('dark:text-slate-400')
+  })
+})
+
 describe('lien de retour en haut de page', () => {
   it('affiche dans le pied de page un lien accessible qui ramène à l’ancre supérieure (C1, C2)', () => {
     const container = renderApp()
