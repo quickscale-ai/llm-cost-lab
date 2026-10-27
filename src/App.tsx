@@ -34,6 +34,24 @@ function printDate(date: Date): string {
   return `${year}-${month}-${day}`
 }
 
+export function PricingVerificationNotice({ verifiedAt }: { verifiedAt?: string }) {
+  return (
+    <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+      {verifiedAt ? (
+        <>
+          Prix relevés le{' '}
+          <strong className="font-semibold text-slate-700 dark:text-slate-300">
+            {formatDate(verifiedAt)}
+          </strong>
+          .
+        </>
+      ) : (
+        'Prix relevés : date non disponible.'
+      )}
+    </p>
+  )
+}
+
 export default function App() {
   const [mode, setMode] = useState<SimMode>('volume')
   const [usage, setUsage] = useState<Usage>(DEFAULT_USAGE)
@@ -331,6 +349,7 @@ export default function App() {
               }
             />
           </div>
+          <PricingVerificationNotice verifiedAt={PRICING_VERIFIED_AT} />
         </section>
 
         <footer className="mt-12 border-t border-slate-200 pt-6 text-xs leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
