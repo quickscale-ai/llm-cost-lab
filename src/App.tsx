@@ -110,7 +110,10 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div
+      id="page-top"
+      className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100"
+    >
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
         <header>
           <p className="text-xs font-semibold tracking-[0.18em] text-brand-600 uppercase dark:text-brand-500">
@@ -333,6 +336,14 @@ export default function App() {
               className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-500"
             >
               Code source sur GitHub
+            </a>
+          </p>
+          <p className="mt-3">
+            <a
+              href="#page-top"
+              className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-500"
+            >
+              Haut de page
             </a>
           </p>
         </footer>

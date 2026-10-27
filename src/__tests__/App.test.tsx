@@ -25,6 +25,7 @@ afterEach(() => {
   mountedContainer?.remove()
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: defaultInnerWidth })
   window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
+  window.location.hash = ''
   document.title = 'LLM Cost Lab — Comparateur de coût par token'
   vi.restoreAllMocks()
   vi.useRealTimers()
@@ -396,5 +397,25 @@ describe('export du comparatif en PDF', () => {
     act(() => button.click())
 
     expect(print).toHaveBeenCalledOnce()
+  })
+})
+
+describe('lien de retour en haut de page', () => {
+  it('affiche dans le pied de page un lien accessible qui ramène à l’ancre supérieure (C1, C2)', () => {
+    const container = renderApp()
+    const pageTop = container.querySelector<HTMLElement>('#page-top')
+    const footer = container.querySelector('footer')
+    const link = footer?.querySelector<HTMLAnchorElement>('a[href="#page-top"]')
+
+    expect(pageTop).toBeTruthy()
+    expect(link).toBeTruthy()
+    expect(link?.textContent?.trim()).toBe('Haut de page')
+    expect(link?.tagName).toBe('A')
+    expect(link?.getAttribute('href')).toBe('#page-top')
+    expect(link?.tabIndex).toBe(0)
+
+    act(() => link?.click())
+
+    expect(window.location.hash).toBe('#page-top')
   })
 })
