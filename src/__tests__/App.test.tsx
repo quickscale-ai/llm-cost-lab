@@ -172,7 +172,10 @@ describe('export du comparatif en PDF', () => {
   it('ajoute la date au titre avant d’ouvrir la boîte d’impression (C2)', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2026, 0, 31, 12, 0, 0))
-    const print = mockPrint()
+    const print = vi.fn(() => {
+      expect(document.title).toContain('2026-01-31')
+    })
+    Object.defineProperty(window, 'print', { configurable: true, value: print })
     const container = renderApp()
 
     act(() => buttonWithText(container, 'Exporter en PDF').click())
