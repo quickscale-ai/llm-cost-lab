@@ -146,11 +146,11 @@ describe('sélecteur de langue', () => {
   it('traduit le titre et les en-têtes du tableau, puis revient au français (C1, C2, C3)', () => {
     const container = renderApp()
     const tableHeaders = () =>
-      Array.from(container.querySelectorAll('table thead button')).map((button) => button.textContent ?? '')
+      Array.from(container.querySelectorAll('table thead button')).map((button) => button.textContent?.trim() ?? '')
 
     expect(container.querySelector('h1')?.textContent).toBe('Comparateur LLM €')
     expect(document.title).toBe('LLM Cost Lab — Comparateur de coût par token · 2026')
-    expect(tableHeaders().some((header) => header.includes('Modèle'))).toBe(true)
+    expect(tableHeaders()[0]).toBe("Modèle d'IA")
     expect(tableHeaders().some((header) => header.includes('Fenêtre de contexte'))).toBe(true)
 
     act(() => buttonWithText(container, 'EN').click())
@@ -160,7 +160,7 @@ describe('sélecteur de langue', () => {
     expect(container.querySelector('h1')?.textContent).not.toContain('€')
     expect(document.title).toBe('LLM Cost Lab — Token Cost Comparator · 2026')
     expect(document.title).not.toContain('(2026)')
-    expect(tableHeaders().some((header) => header.includes('Model'))).toBe(true)
+    expect(tableHeaders()[0]).toBe('Model')
     expect(tableHeaders().some((header) => header.includes('Context'))).toBe(true)
     expect(tableHeaders().some((header) => header.includes('Total cost'))).toBe(true)
     expect(container.textContent).toContain('Comparez le tarif des principaux modèles de langage')
