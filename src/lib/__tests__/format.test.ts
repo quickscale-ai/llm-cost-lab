@@ -39,6 +39,10 @@ describe('formatCurrency', () => {
     expect(formatCurrency(0.0004, 'USD')).toContain('0,0004')
   })
 
+  it('conserve quatre décimales pour un petit prix du tableau (C1)', () => {
+    expect(normalize(formatCurrency(0.0015, 'USD'))).toBe('0,0015 $US')
+  })
+
   it('affiche toujours au moins deux décimales sous 1000, pour une colonne alignée', () => {
     expect(normalize(formatCurrency(0.6, 'USD'))).toBe('0,60 $US')
     expect(normalize(formatCurrency(0.2, 'USD'))).toBe('0,20 $US')
