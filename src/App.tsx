@@ -25,6 +25,13 @@ const DEFAULT_AGENTIC: AgenticParams = {
   outputTokensPerCall: 1_500,
 }
 
+function printDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export default function App() {
   const [mode, setMode] = useState<SimMode>('volume')
   const [usage, setUsage] = useState<Usage>(DEFAULT_USAGE)
@@ -83,6 +90,12 @@ export default function App() {
   function changeCurrency(nextCurrency: Currency) {
     setCurrency(nextCurrency)
     storeCurrency(nextCurrency)
+  }
+
+  function exportPdf() {
+    const date = printDate(new Date())
+    document.title = `Comparatif de modèles - ${date}`
+    window.print()
   }
 
   const tabs: { key: SimMode; label: string }[] = [
@@ -234,6 +247,13 @@ export default function App() {
             {displayedBreakdowns.length}{' '}
             {displayedBreakdowns.length === 1 ? 'modèle affiché' : 'modèles affichés'} sur {visibleModels.length}
           </p>
+          <button
+            type="button"
+            onClick={exportPdf}
+            className="mt-4 rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-brand-500 dark:text-slate-950 dark:hover:bg-brand-400 dark:focus-visible:outline-brand-500"
+          >
+            Exporter en PDF
+          </button>
           {displayedBreakdowns.length > 0 && (
             <div className="mt-4">
               <BestValueCard breakdowns={breakdowns} currency={currency} />

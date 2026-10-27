@@ -1,10 +1,13 @@
 // @vitest-environment happy-dom
 
+import { readFileSync } from 'node:fs'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
+
+const printStylesheet = readFileSync('src/index.css', 'utf8')
 
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -15,6 +18,9 @@ afterEach(() => {
   if (mountedRoot) act(() => mountedRoot?.unmount())
   mountedContainer?.remove()
   window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
+  document.title = 'LLM Cost Lab — Comparateur de coût par token'
+  vi.restoreAllMocks()
+  vi.useRealTimers()
   mountedRoot = undefined
   mountedContainer = undefined
 })
@@ -33,6 +39,12 @@ function buttonWithText(container: HTMLDivElement, text: string) {
   )
   if (!button) throw new Error(`Bouton introuvable : ${text}`)
   return button
+}
+
+function mockPrint() {
+  const print = vi.fn()
+  Object.defineProperty(window, 'print', { configurable: true, value: print })
+  return print
 }
 
 function unmountApp() {
@@ -144,5 +156,43 @@ describe('recherche de modèle dans l’application', () => {
     expect(container.querySelector('[role="status"]')?.textContent).toContain(query)
     expect(container.querySelector('[role="region"]')).toBeNull()
     expect(container.textContent).not.toContain("la recommandation n'est pas disponible")
+  })
+})
+
+describe('export du comparatif en PDF', () => {
+  it('marque le tableau affiché et masque le reste de la page à l’impression (C1)', () => {
+    const container = renderApp()
+
+    expect(container.querySelector('table')?.classList.contains('pricing-table-print')).toBe(true)
+    expect(printStylesheet).toContain('@media print')
+    expect(printStylesheet).toMatch(/body \*\s*\{[\s\S]*visibility: hidden !important/)
+    expect(printStylesheet).toMatch(/\.pricing-table-print,[\s\S]*visibility: visible !important/)
+  })
+
+  it('ajoute la date au titre avant d’ouvrir la boîte d’impression (C2)', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 0, 31, 12, 0, 0))
+    const print = vi.fn(() => {
+      expect(document.title).toContain('2026-01-31')
+    })
+    Object.defineProperty(window, 'print', { configurable: true, value: print })
+    const container = renderApp()
+
+    act(() => buttonWithText(container, 'Exporter en PDF').click())
+
+    expect(document.title).toContain('2026-01-31')
+    expect(print).toHaveBeenCalledOnce()
+  })
+
+  it('affiche un bouton accessible qui déclenche l’impression (C3)', () => {
+    const print = mockPrint()
+    const container = renderApp()
+
+    const button = buttonWithText(container, 'Exporter en PDF')
+    expect(button.getAttribute('type')).toBe('button')
+
+    act(() => button.click())
+
+    expect(print).toHaveBeenCalledOnce()
   })
 })
