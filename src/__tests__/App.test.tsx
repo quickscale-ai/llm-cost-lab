@@ -432,7 +432,7 @@ describe('export du comparatif en CSV', () => {
         return 'blob:comparatif'
       }),
     })
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
     const container = renderApp()
 
     act(() => buttonWithText(container, 'Mistral AI').click())
@@ -442,6 +442,7 @@ describe('export du comparatif en CSV', () => {
     expect(button.getAttribute('type')).toBe('button')
     act(() => button.click())
 
+    expect(anchorClick).toHaveBeenCalledTimes(1)
     expect(exportedBlob).toBeDefined()
     expect(await exportedBlob?.text()).toContain('Mistral Small 4')
     expect(await exportedBlob?.text()).not.toContain('Mistral Large 3')
@@ -459,12 +460,13 @@ describe('export du comparatif en CSV', () => {
         return 'blob:comparatif'
       }),
     })
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
     const container = renderApp()
 
     changeSearch(container, 'modèle inexistant')
     act(() => buttonWithText(container, 'Exporter en CSV').click())
 
+    expect(anchorClick).toHaveBeenCalledTimes(1)
     expect(await exportedBlob?.text()).toBe(
       '\uFEFFModèle;Fournisseur;Prix / M entrée (USD);Prix / M sortie (USD);Contexte;Coût total (USD)',
     )
