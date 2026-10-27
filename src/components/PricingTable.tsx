@@ -115,7 +115,7 @@ export function PricingTable({ breakdowns, barCeiling, currency, tasksCount, emp
   return (
     <>
       {/* Vue tableau — écrans larges */}
-      <table className="hidden w-full border-collapse text-sm md:table">
+      <table className="pricing-table-print hidden w-full border-collapse text-sm md:table">
         <caption className="sr-only">
           Tarifs et coût estimé par modèle, classés par {sortKey === 'cost' ? 'coût' : 'colonne sélectionnée'}
         </caption>

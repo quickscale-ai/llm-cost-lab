@@ -35,3 +35,21 @@ body {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
 }
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .pricing-table-print,
+  .pricing-table-print * {
+    visibility: visible !important;
+  }
+
+  .pricing-table-print {
+    display: table !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+}
