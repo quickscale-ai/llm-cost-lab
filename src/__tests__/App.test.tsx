@@ -28,7 +28,7 @@ afterEach(() => {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: defaultInnerWidth })
   window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
   window.location.hash = ''
-  document.title = 'LLM Cost Lab — Comparateur de coût par token · 2026'
+  document.title = 'LLM Cost Lab — LLM Cost Lab — comparateur de prix · 2026'
   vi.restoreAllMocks()
   vi.useRealTimers()
   mountedRoot = undefined
@@ -148,7 +148,7 @@ describe('sélecteur de langue', () => {
     const tableHeaders = () =>
       Array.from(container.querySelectorAll('table thead button')).map((button) => button.textContent ?? '')
 
-    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token €')
+    expect(container.querySelector('h1')?.textContent).toBe('LLM Cost Lab — comparateur de prix €')
     expect(tableHeaders().some((header) => header.includes('Modèle'))).toBe(true)
 
     act(() => buttonWithText(container, 'EN').click())
@@ -160,7 +160,7 @@ describe('sélecteur de langue', () => {
 
     act(() => buttonWithText(container, 'FR').click())
 
-    expect(container.querySelector('h1')?.textContent).toBe('Comparateur de coût par token €')
+    expect(container.querySelector('h1')?.textContent).toBe('LLM Cost Lab — comparateur de prix €')
     expect(tableHeaders().some((header) => header.includes('Coût total'))).toBe(true)
   })
 })
@@ -212,7 +212,7 @@ describe('parcours du comparateur', () => {
 
 describe('en-tête de la page', () => {
   it('conserve le titre de l’onglet avec le suffixe de l’année (C1)', () => {
-    document.title = 'LLM Cost Lab — Comparateur de coût par token · 2026'
+    document.title = 'LLM Cost Lab — LLM Cost Lab — comparateur de prix · 2026'
 
     renderApp()
 

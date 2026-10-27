@@ -4,7 +4,7 @@ import { SUPPORTED_LANGUAGES, translate, translations } from '../i18n'
 describe('traductions de l’interface', () => {
   it('expose les ressources française et anglaise', () => {
     expect(SUPPORTED_LANGUAGES).toEqual(['fr', 'en'])
-    expect(translations.fr.pageTitle).toBe('Comparateur de coût par token')
+    expect(translations.fr.pageTitle).toBe('LLM Cost Lab — comparateur de prix')
     expect(translations.en.pageTitle).toBe('Token Cost Comparator')
     expect(translations.fr.tableModel).toBe('Modèle')
     expect(translations.en.tableModel).toBe('Model')
