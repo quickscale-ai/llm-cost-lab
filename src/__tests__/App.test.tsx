@@ -687,6 +687,8 @@ describe('lien de retour en haut de page', () => {
     const link = tableArea?.querySelector<HTMLAnchorElement>('a[href="#page-top"]')
 
     expect(pageTop).toBeTruthy()
+    expect(pageTop).toBe(container.firstElementChild)
+    expect(pageTop?.parentElement).toBe(container)
     expect(table).toBeTruthy()
     expect(mobileList).toBeTruthy()
     expect(link).toBeTruthy()
