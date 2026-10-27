@@ -6,7 +6,7 @@ guardrail_paths:
   - "src/lib/pricing.ts"
 cadrage:
   direct: true
-  max_files: 4
+  max_files: 3
   max_lines: 150
   tech_leads:
     - HMohQuickscale
