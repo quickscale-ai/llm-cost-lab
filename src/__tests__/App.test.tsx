@@ -626,7 +626,6 @@ describe('pied de page', () => {
     expect(footer?.textContent).toContain(formatDate(PRICING_VERIFIED_AT))
     expect(footer?.textContent).toContain('Conversion en francs CFA au taux de')
     expect(footer?.querySelector('a[href="https://github.com/quickscale-ai/llm-cost-lab"]')?.textContent?.trim()).toBe('GitHub')
-    expect(footer?.querySelector('a[href="#page-top"]')?.textContent?.trim()).toBe('Haut de page')
   })
 
   it('utilise des couleurs lisibles dans les thèmes clair et sombre (C2)', () => {
@@ -679,18 +678,24 @@ describe('date de relevé des prix', () => {
 })
 
 describe('lien de retour en haut de page', () => {
-  it('affiche dans le pied de page un lien accessible qui ramène à l’ancre supérieure (C1, C2)', () => {
+  it('place le lien sous les vues du tableau et ramène à l’ancre supérieure (C1)', () => {
     const container = renderApp()
     const pageTop = container.querySelector<HTMLElement>('#page-top')
-    const footer = container.querySelector('footer')
-    const link = footer?.querySelector<HTMLAnchorElement>('a[href="#page-top"]')
+    const table = container.querySelector('table')
+    const tableArea = table?.parentElement
+    const mobileList = tableArea?.querySelector('ul')
+    const link = tableArea?.querySelector<HTMLAnchorElement>('a[href="#page-top"]')
 
     expect(pageTop).toBeTruthy()
+    expect(table).toBeTruthy()
+    expect(mobileList).toBeTruthy()
     expect(link).toBeTruthy()
     expect(link?.textContent?.trim()).toBe('Haut de page')
     expect(link?.tagName).toBe('A')
     expect(link?.getAttribute('href')).toBe('#page-top')
     expect(link?.tabIndex).toBe(0)
+    expect(link?.parentElement?.parentElement).toBe(tableArea)
+    expect(link?.parentElement?.previousElementSibling).toBe(mobileList)
 
     act(() => link?.click())
 
