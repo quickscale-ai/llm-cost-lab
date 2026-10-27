@@ -118,6 +118,7 @@ describe('parcours du comparateur', () => {
 
     expect(Array.from(container.querySelectorAll('h2')).map((heading) => heading.textContent?.trim())).toEqual([
       '1. Configurez votre simulation',
+      'Coût mensuel par modèle',
       '2. Comparez deux modèles',
       '3. Consultez les résultats',
     ])
