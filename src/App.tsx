@@ -181,6 +181,9 @@ export default function App() {
               })}
             </div>
           </div>
+          <p className="mt-2 max-w-2xl text-sm font-medium text-slate-700 dark:text-slate-300">
+            {visibleProviderCount} fournisseur{visibleProviderCount === 1 ? '' : 's'} comparé{visibleProviderCount === 1 ? '' : 's'}
+          </p>
           <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
             {visibleModels.length} {visibleModels.length === 1 ? 'modèle comparé' : 'modèles comparés'}. Comparez le tarif des principaux modèles de langage et estimez ce que coûterait
             réellement votre usage. Tarifs publics, saisis à la main et datés.
@@ -388,9 +391,6 @@ export default function App() {
         </section>
 
         <footer className="mt-12 border-t border-slate-200 pt-6 text-xs leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {visibleProviderCount} fournisseur{visibleProviderCount === 1 ? '' : 's'} comparé{visibleProviderCount === 1 ? '' : 's'}
-          </p>
           <p className="mt-3 text-slate-500 dark:text-slate-400">© 2026 LLM Cost Lab, par Quickscale</p>
           <p className="mt-3">
             Tarifs publics vérifiés le{' '}

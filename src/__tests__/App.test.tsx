@@ -389,23 +389,27 @@ describe('graphique des coûts mensuels', () => {
 
 
 describe('compteur de fournisseurs comparés', () => {
-  it('affiche le nombre de fournisseurs distincts dans le pied de page, pas dans l’en-tête (C1)', () => {
+  it('affiche le nombre de fournisseurs distincts sous le titre, pas dans le pied de page (C1)', () => {
     const container = renderApp()
     const header = container.querySelector('header')
     const footer = container.querySelector('footer')
 
-    expect(footer?.textContent).toContain('7 fournisseurs comparés')
-    expect(header?.textContent).not.toContain('fournisseurs comparés')
+    const providerCount = Array.from(header?.querySelectorAll('p') ?? []).find((paragraph) =>
+      paragraph.textContent?.includes('fournisseurs comparés'),
+    )
+
+    expect(providerCount?.textContent).toBe('7 fournisseurs comparés')
+    expect(footer?.textContent).not.toContain('fournisseurs comparés')
   })
 
   it('met à jour le nombre affiché lorsqu’un filtre de fournisseur est activé (C1)', () => {
     const container = renderApp()
-    const footer = container.querySelector('footer')
+    const header = container.querySelector('header')
 
-    expect(footer?.textContent).toContain('7 fournisseurs comparés')
+    expect(header?.textContent).toContain('7 fournisseurs comparés')
     act(() => buttonWithText(container, 'Mistral AI').click())
-    expect(footer?.textContent).toContain('1 fournisseur comparé')
-    expect(footer?.textContent).not.toContain('7 fournisseurs comparés')
+    expect(header?.textContent).toContain('1 fournisseur comparé')
+    expect(header?.textContent).not.toContain('7 fournisseurs comparés')
   })
 })
 
@@ -621,7 +625,6 @@ describe('pied de page', () => {
     )
 
     expect(copyright?.textContent?.trim()).toBe('© 2026 LLM Cost Lab, par Quickscale')
-    expect(footer?.textContent).toContain('7 fournisseurs comparés')
     expect(footer?.textContent).toContain('Tarifs publics vérifiés le')
     expect(footer?.textContent).toContain(formatDate(PRICING_VERIFIED_AT))
     expect(footer?.textContent).toContain('Conversion en francs CFA au taux de')
