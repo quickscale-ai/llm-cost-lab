@@ -5,7 +5,10 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { MODELS } from '../data/models'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
+import { formatCurrency } from '../lib/format'
+import { computeCost } from '../lib/pricing'
 
 const printStylesheet = readFileSync('src/index.css', 'utf8')
 
@@ -65,6 +68,17 @@ function changeSearch(container: HTMLDivElement, value: string) {
   return search
 }
 
+function changeSelect(container: HTMLDivElement, id: string, value: string) {
+  const select = container.querySelector<HTMLSelectElement>(`#${id}`)
+  if (!select) throw new Error(`Sélecteur introuvable : ${id}`)
+  act(() => {
+    const setValue = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
+    setValue?.call(select, value)
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  return select
+}
+
 describe('mémorisation de la devise', () => {
   it('utilise le dollar par défaut sans préférence enregistrée', () => {
     window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
@@ -94,6 +108,49 @@ describe('mémorisation de la devise', () => {
   })
 })
 
+describe('parcours du comparateur', () => {
+  it('présente la configuration, la comparaison puis les résultats dans cet ordre (C1)', () => {
+    const container = renderApp()
+
+    expect(Array.from(container.querySelectorAll('h2')).map((heading) => heading.textContent?.trim())).toEqual([
+      '1. Configurez votre simulation',
+      '2. Comparez deux modèles',
+      '3. Consultez les résultats',
+    ])
+  })
+
+  it('affiche une différence mensuelle en euros et pourcentage, réactive aux changements (C3, C4)', () => {
+    const container = renderApp()
+    const comparisonSection = container.querySelector<HTMLElement>('[aria-labelledby="comparison-heading"]')
+    if (!comparisonSection) throw new Error('Section de comparaison introuvable')
+    const difference = comparisonSection.querySelector<HTMLElement>('[role="status"]')
+    if (!difference) throw new Error('Zone de différence introuvable')
+
+    expect(difference.getAttribute('aria-live')).toBe('polite')
+    expect(difference.getAttribute('aria-label')).toContain('Différence mensuelle')
+    expect(difference.textContent).toContain('€')
+    expect(difference.textContent).toContain('%')
+    const initialDifference = difference.textContent
+
+    const firstSelect = comparisonSection.querySelector<HTMLSelectElement>('#comparison-first-model')
+    const secondSelect = comparisonSection.querySelector<HTMLSelectElement>('#comparison-second-model')
+    expect(firstSelect?.getAttribute('aria-label')).toBe('Premier modèle à comparer')
+    expect(secondSelect?.getAttribute('aria-label')).toBe('Second modèle à comparer')
+    expect(comparisonSection.querySelector('label[for="comparison-first-model"]')).toBeTruthy()
+    expect(comparisonSection.querySelector('label[for="comparison-second-model"]')).toBeTruthy()
+
+    changeSelect(container, 'comparison-first-model', 'mistral-large-3')
+    expect(difference.textContent).not.toBe(initialDifference)
+    expect(difference.textContent).toContain('€')
+    expect(difference.textContent).toContain('%')
+
+    const costsBeforeCurrencyChange = comparisonSection.textContent
+    act(() => buttonWithText(container, 'EUR').click())
+    expect(comparisonSection.textContent).not.toBe(costsBeforeCurrencyChange)
+    expect(comparisonSection.textContent).toContain('€')
+  })
+})
+
 function tableRowForModel(container: HTMLDivElement, name: string) {
   return Array.from(container.querySelectorAll<HTMLTableRowElement>('tbody tr')).find((row) =>
     row.querySelector('td')?.textContent?.includes(name),
@@ -112,7 +169,6 @@ describe('recherche de modèle dans l’application', () => {
 
     act(() => buttonWithText(container, 'Mistral AI').click())
     expect(container.textContent).toContain('2 modèles affichés sur 2')
-    const recommendationBefore = container.querySelector('[role="region"]')?.textContent
     const smallRowBefore = tableRowForModel(container, 'Mistral Small 4')
     const barBefore = smallRowBefore?.querySelector<HTMLElement>('[style]')?.style.width
     const search = changeSearch(container, 'small')
@@ -121,10 +177,21 @@ describe('recherche de modèle dans l’application', () => {
     expect(filteredTable?.textContent).toContain('Mistral Small 4')
     expect(filteredTable?.textContent).not.toContain('Mistral Large 3')
     expect(filteredTable?.textContent).not.toContain('Claude Fable 5.1')
-    expect(container.querySelector('[role="region"]')?.textContent).toBe(recommendationBefore)
+    const recommendation = container.querySelector('[role="region"]')
+    expect(recommendation?.textContent).toContain('Mistral Small 4')
+    expect(recommendation?.textContent).not.toContain('Mistral Large 3')
     expect(tableRowForModel(container, 'Mistral Small 4')?.querySelector<HTMLElement>('[style]')?.style.width).toBe(
       barBefore,
     )
+
+    act(() => buttonWithText(container, '10 K / 2 K').click())
+    const mistralSmall = MODELS.find((model) => model.id === 'mistral-small-4')
+    if (!mistralSmall) throw new Error('Modèle Mistral Small 4 introuvable')
+    const expectedRecommendationCost = computeCost(mistralSmall, {
+      inputTokens: 10_000,
+      outputTokens: 2_000,
+    })
+    expect(recommendation?.textContent).toContain(formatCurrency(expectedRecommendationCost.totalCost, 'USD'))
 
     expect(search.type).toBe('text')
     expect(search.inputMode).toBe('search')
@@ -152,8 +219,10 @@ describe('recherche de modèle dans l’application', () => {
 
     expect(container.textContent).toContain('0 modèles affichés sur 16')
     expect(container.querySelector('table')).toBeNull()
-    expect(container.querySelectorAll('[role="status"]')).toHaveLength(1)
-    expect(container.querySelector('[role="status"]')?.textContent).toContain(query)
+    const statuses = Array.from(container.querySelectorAll<HTMLElement>('[role="status"]'))
+    const emptyResultsStatus = statuses.filter((status) => status.textContent?.includes(query))
+    expect(emptyResultsStatus).toHaveLength(1)
+    expect(emptyResultsStatus[0]?.textContent).toContain(query)
     expect(container.querySelector('[role="region"]')).toBeNull()
     expect(container.textContent).not.toContain("la recommandation n'est pas disponible")
   })
