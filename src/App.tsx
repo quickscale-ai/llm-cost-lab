@@ -5,6 +5,7 @@ import type { Usage, AgenticParams } from './lib/pricing'
 import { rankByCost, maxTotalCost, agenticToUsage, totalCalls, computeCost, compareCosts } from './lib/pricing'
 import type { Currency } from './lib/format'
 import { formatDate, formatTokens } from './lib/format'
+import { readStoredCurrency, storeCurrency } from './lib/currencyPreference'
 import { filterModelsByName } from './lib/search'
 import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
@@ -28,7 +29,7 @@ export default function App() {
   const [mode, setMode] = useState<SimMode>('volume')
   const [usage, setUsage] = useState<Usage>(DEFAULT_USAGE)
   const [agenticParams, setAgenticParams] = useState<AgenticParams>(DEFAULT_AGENTIC)
-  const [currency, setCurrency] = useState<Currency>('USD')
+  const [currency, setCurrency] = useState<Currency>(readStoredCurrency)
   // Un ensemble vide signifie « aucun filtre » : tous les fournisseurs sont affichés.
   const [selectedProviders, setSelectedProviders] = useState<Set<Provider>>(new Set())
   const [modelSearch, setModelSearch] = useState('')
@@ -77,6 +78,11 @@ export default function App() {
       else next.add(provider)
       return next
     })
+  }
+
+  function changeCurrency(nextCurrency: Currency) {
+    setCurrency(nextCurrency)
+    storeCurrency(nextCurrency)
   }
 
   const tabs: { key: SimMode; label: string }[] = [
@@ -128,7 +134,7 @@ export default function App() {
                 </p>
               )}
             </div>
-            <CurrencyToggle value={currency} onChange={setCurrency} />
+            <CurrencyToggle value={currency} onChange={changeCurrency} />
           </div>
 
           {/* Onglets */}

@@ -4,6 +4,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from '../App'
+import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
 
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -13,6 +14,7 @@ let mountedContainer: HTMLDivElement | undefined
 afterEach(() => {
   if (mountedRoot) act(() => mountedRoot?.unmount())
   mountedContainer?.remove()
+  window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
   mountedRoot = undefined
   mountedContainer = undefined
 })
@@ -33,6 +35,13 @@ function buttonWithText(container: HTMLDivElement, text: string) {
   return button
 }
 
+function unmountApp() {
+  if (mountedRoot) act(() => mountedRoot?.unmount())
+  mountedContainer?.remove()
+  mountedRoot = undefined
+  mountedContainer = undefined
+}
+
 function changeSearch(container: HTMLDivElement, value: string) {
   const search = container.querySelector<HTMLInputElement>('#model-search')
   if (!search) throw new Error('Champ de recherche introuvable')
@@ -43,6 +52,35 @@ function changeSearch(container: HTMLDivElement, value: string) {
   })
   return search
 }
+
+describe('mémorisation de la devise', () => {
+  it('utilise le dollar par défaut sans préférence enregistrée', () => {
+    window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
+    const container = renderApp()
+
+    expect(buttonWithText(container, 'USD').getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('retrouve la devise choisie après un rechargement', () => {
+    const firstVisit = renderApp()
+    act(() => buttonWithText(firstVisit, 'EUR').click())
+    expect(window.localStorage.getItem(CURRENCY_STORAGE_KEY)).toBe('EUR')
+
+    unmountApp()
+    const secondVisit = renderApp()
+
+    expect(buttonWithText(secondVisit, 'EUR').getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('revient au dollar si la préférence enregistrée est invalide', () => {
+    window.localStorage.setItem(CURRENCY_STORAGE_KEY, 'GBP')
+
+    const container = renderApp()
+
+    expect(buttonWithText(container, 'USD').getAttribute('aria-pressed')).toBe('true')
+    expect(buttonWithText(container, 'EUR').getAttribute('aria-pressed')).toBe('false')
+  })
+})
 
 function tableRowForModel(container: HTMLDivElement, name: string) {
   return Array.from(container.querySelectorAll<HTMLTableRowElement>('tbody tr')).find((row) =>
