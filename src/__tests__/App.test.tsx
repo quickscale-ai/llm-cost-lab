@@ -421,6 +421,60 @@ describe('réinitialisation globale des filtres', () => {
   })
 })
 
+describe('export du comparatif en CSV', () => {
+  it('exporte uniquement les modèles visibles après un filtre et une recherche', async () => {
+    let exportedBlob: Blob | undefined
+    const originalCreateObjectURL = URL.createObjectURL
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn((blob: Blob) => {
+        exportedBlob = blob
+        return 'blob:comparatif'
+      }),
+    })
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const container = renderApp()
+
+    act(() => buttonWithText(container, 'Mistral AI').click())
+    changeSearch(container, 'small')
+    const button = buttonWithText(container, 'Exporter en CSV')
+
+    expect(button.getAttribute('type')).toBe('button')
+    act(() => button.click())
+
+    expect(anchorClick).toHaveBeenCalledTimes(1)
+    expect(exportedBlob).toBeDefined()
+    expect(await exportedBlob?.text()).toContain('Mistral Small 4')
+    expect(await exportedBlob?.text()).not.toContain('Mistral Large 3')
+    expect(await exportedBlob?.text()).not.toContain('Claude Fable 5.1')
+    Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: originalCreateObjectURL })
+  })
+
+  it('exporte uniquement les en-têtes quand la recherche ne retourne aucun modèle', async () => {
+    let exportedBlob: Blob | undefined
+    const originalCreateObjectURL = URL.createObjectURL
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn((blob: Blob) => {
+        exportedBlob = blob
+        return 'blob:comparatif'
+      }),
+    })
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const container = renderApp()
+
+    changeSearch(container, 'modèle inexistant')
+    act(() => buttonWithText(container, 'Exporter en CSV').click())
+
+    expect(anchorClick).toHaveBeenCalledTimes(1)
+    expect(await exportedBlob?.text()).toBe(
+      '\uFEFFModèle;Fournisseur;Prix / M entrée (USD);Prix / M sortie (USD);Contexte;Coût total (USD)',
+    )
+    Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: originalCreateObjectURL })
+  })
+})
+
+
 describe('export du comparatif en PDF', () => {
   it('marque le tableau affiché et masque le reste de la page à l’impression (C1)', () => {
     const container = renderApp()

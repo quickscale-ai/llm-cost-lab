@@ -7,6 +7,7 @@ import type { Currency } from './lib/format'
 import { formatDate, formatTokens } from './lib/format'
 import { readStoredCurrency, storeCurrency } from './lib/currencyPreference'
 import { filterModelsByName } from './lib/search'
+import { buildPricingCsv, downloadCsv } from './lib/csv'
 import { CurrencyToggle } from './components/CurrencyToggle'
 import { ProviderFilter } from './components/ProviderFilter'
 import { VolumeSimulator } from './components/VolumeSimulator'
@@ -102,6 +103,11 @@ export default function App() {
     const date = printDate(new Date())
     document.title = `Comparatif de modèles - ${date}`
     window.print()
+  }
+
+  function exportCsv() {
+    const csv = buildPricingCsv(displayedBreakdowns, currency, mode === 'agentic' ? agenticParams.tasks : undefined)
+    downloadCsv(csv)
   }
 
   const tabs: { key: SimMode; label: string }[] = [
@@ -286,13 +292,26 @@ export default function App() {
             {displayedBreakdowns.length}{' '}
             {displayedBreakdowns.length === 1 ? 'modèle affiché' : 'modèles affichés'} sur {visibleModels.length}
           </p>
-          <button
-            type="button"
-            onClick={exportPdf}
-            className="mt-4 rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-brand-500 dark:text-slate-950 dark:hover:bg-brand-400 dark:focus-visible:outline-brand-500"
+          <div
+            role="group"
+            aria-label="Exporter le comparatif"
+            className="mt-4 flex flex-wrap gap-2"
           >
-            Exporter en PDF
-          </button>
+            <button
+              type="button"
+              onClick={exportPdf}
+              className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-brand-500 dark:text-slate-950 dark:hover:bg-brand-400 dark:focus-visible:outline-brand-500"
+            >
+              Exporter en PDF
+            </button>
+            <button
+              type="button"
+              onClick={exportCsv}
+              className="rounded-lg border border-brand-600 px-3 py-2 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-brand-500 dark:text-brand-400 dark:hover:bg-slate-800 dark:focus-visible:outline-brand-500"
+            >
+              Exporter en CSV
+            </button>
+          </div>
           {displayedBreakdowns.length > 0 && (
             <div className="mt-4">
               <BestValueCard breakdowns={displayedBreakdowns} currency={currency} />
