@@ -4,13 +4,13 @@ import { readFileSync } from 'node:fs'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import App from '../App'
+import App, { PricingVerificationNotice } from '../App'
 import { PricingTable } from '../components/PricingTable'
-import { MODELS } from '../data/models'
+import { MODELS, PRICING_VERIFIED_AT } from '../data/models'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
 import type { CostBreakdown } from '../lib/pricing'
 import { computeCost } from '../lib/pricing'
-import { formatCurrency } from '../lib/format'
+import { formatCurrency, formatDate } from '../lib/format'
 import { MonthlyCostChart } from '../components/MonthlyCostChart'
 
 const printStylesheet = readFileSync('src/index.css', 'utf8')
@@ -50,6 +50,14 @@ function renderPricingTable(breakdowns: CostBreakdown[]) {
   act(() =>
     mountedRoot?.render(<PricingTable breakdowns={breakdowns} currency="USD" />),
   )
+  return mountedContainer
+}
+
+function renderPricingVerificationNotice(verifiedAt?: string) {
+  mountedContainer = document.createElement('div')
+  document.body.append(mountedContainer)
+  mountedRoot = createRoot(mountedContainer)
+  act(() => mountedRoot?.render(<PricingVerificationNotice verifiedAt={verifiedAt} />))
   return mountedContainer
 }
 
@@ -572,6 +580,26 @@ describe('pied de page', () => {
     const link = footer?.querySelector<HTMLAnchorElement>('a[href="https://github.com/quickscale-ai/llm-cost-lab"]')
 
     expect(link?.getAttribute('target')).toBe('_blank')
+  })
+})
+
+describe('date de relevé des prix', () => {
+  it('affiche la date formatée sous le tableau (C1)', () => {
+    const container = renderApp()
+    const table = container.querySelector('table')
+    const tableWrapper = table?.parentElement
+    const notice = tableWrapper?.nextElementSibling
+
+    expect(table).toBeTruthy()
+    expect(notice?.textContent).toContain('Prix relevés le')
+    expect(notice?.textContent).toContain(formatDate(PRICING_VERIFIED_AT))
+    expect(notice?.parentElement?.contains(table)).toBe(true)
+  })
+
+  it('indique l’absence de date de relevé quand elle n’est pas disponible (C2)', () => {
+    const container = renderPricingVerificationNotice()
+
+    expect(container.textContent).toBe('Prix relevés : date non disponible.')
   })
 })
 
