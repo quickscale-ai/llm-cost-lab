@@ -533,6 +533,13 @@ describe('réinitialisation globale des filtres', () => {
 })
 
 describe('export du comparatif en CSV', () => {
+  it('affiche l’info-bulle attendue au survol du bouton CSV (C1)', () => {
+    const container = renderApp()
+    const button = buttonWithText(container, 'Exporter en CSV')
+
+    expect(button.getAttribute('title')).toBe('Télécharger le tableau au format CSV')
+  })
+
   it('exporte uniquement les modèles visibles après un filtre et une recherche', async () => {
     let exportedBlob: Blob | undefined
     const originalCreateObjectURL = URL.createObjectURL

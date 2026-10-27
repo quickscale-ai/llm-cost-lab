@@ -365,6 +365,7 @@ export default function App() {
             <button
               type="button"
               onClick={exportCsv}
+              title="Télécharger le tableau au format CSV"
               className="rounded-lg border border-brand-600 px-3 py-2 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-brand-500 dark:text-brand-400 dark:hover:bg-slate-800 dark:focus-visible:outline-brand-500"
             >
               Exporter en CSV
