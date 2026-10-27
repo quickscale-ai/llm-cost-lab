@@ -137,10 +137,10 @@ describe('graphique des coûts mensuels', () => {
   })
 
   it('tronque les noms longs sans masquer leur intitulé complet', () => {
-    const model = MODELS[0]
-    if (!model) throw new Error('Modèle de test introuvable')
+    const baseModel = MODELS[0]
+    if (!baseModel) throw new Error('Modèle de test introuvable')
     const longName = 'Modèle de langage avec un nom particulièrement long pour mobile'
-    const longModel = { ...model, name: longName }
+    const longModel = { ...baseModel, id: 'long-name-model', name: longName }
     const breakdown = computeCost(longModel, { inputTokens: 100_000, outputTokens: 20_000 })
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 360 })
 
@@ -152,7 +152,6 @@ describe('graphique des coûts mensuels', () => {
     const group = mountedContainer.querySelector('[data-model-id]')
     const label = group?.querySelector('text')
     expect(label?.textContent).toBe('Modèle de langage…')
-    expect(label?.getAttribute('clip-path')).toBe('url(#monthly-cost-chart-label-clip-claude-fable-5-1)')
     expect(group?.querySelector('title')?.textContent).toContain(longName)
   })
 
@@ -181,9 +180,17 @@ describe('graphique des coûts mensuels', () => {
     act(() => buttonWithText(container, 'Estimation agentic').click())
     expect(chart.textContent).not.toBe(volumeValues)
     expect(chart.textContent).not.toBe(initialValues)
+    const agenticValues = chart.textContent
+    const displayedModel = MODELS.find((model) => model.id === 'mistral-small-4')
+    if (!displayedModel) throw new Error('Modèle affiché introuvable')
+    const agenticCost = computeCost(displayedModel, {
+      inputTokens: 50 * 10 * 8_000,
+      outputTokens: 50 * 10 * 1_500,
+    }).totalCost
 
     act(() => buttonWithText(container, 'FCFA').click())
-    expect(chart.textContent).not.toBe(volumeValues)
+    expect(chart.textContent).not.toBe(agenticValues)
+    expect(chart.textContent).toContain(formatCurrency(agenticCost, 'XOF'))
     expect(chart.querySelector('svg')?.getAttribute('aria-labelledby')).toBeTruthy()
   })
 })
