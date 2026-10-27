@@ -629,6 +629,32 @@ describe('pied de page', () => {
     expect(footer?.querySelector('a[href="#page-top"]')?.textContent?.trim()).toBe('Haut de page')
   })
 
+  it('affiche « Devise : USD » au rendu initial (C1)', () => {
+    const container = renderApp()
+    const footer = container.querySelector('footer')
+
+    expect(footer?.textContent).toContain('Devise : USD')
+  })
+
+  it('affiche « Devise : EUR » après sélection de l’euro (C1)', () => {
+    const container = renderApp()
+    const footer = container.querySelector('footer')
+
+    act(() => buttonWithText(container, 'EUR').click())
+
+    expect(footer?.textContent).toContain('Devise : EUR')
+  })
+
+  it('réaffiche « Devise : USD » après retour au dollar (C1)', () => {
+    const container = renderApp()
+    const footer = container.querySelector('footer')
+
+    act(() => buttonWithText(container, 'EUR').click())
+    act(() => buttonWithText(container, 'USD').click())
+
+    expect(footer?.textContent).toContain('Devise : USD')
+  })
+
   it('utilise des couleurs lisibles dans les thèmes clair et sombre (C2)', () => {
     const container = renderApp()
     const footer = container.querySelector('footer')
