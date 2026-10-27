@@ -8,13 +8,15 @@ describe('traductions de l’interface', () => {
     expect(translations.en.pageTitle).toBe('Token Cost Comparator')
     expect(translations.fr.pageHeading).toBe('Comparateur LLM')
     expect(translations.en.pageHeading).toBe('Token Cost Comparator')
-    expect(translations.fr.tableModel).toBe('Modèle')
+    expect(translations.fr.tableModel).toBe('Nom du modèle')
     expect(translations.en.tableModel).toBe('Model')
     expect(translations.fr.tableContext).toBe('Fenêtre de contexte')
     expect(translations.en.tableContext).toBe('Context')
   })
 
   it('retourne le texte de la langue demandée', () => {
+    expect(translate('fr', 'tableModel')).toBe('Nom du modèle')
+    expect(translate('en', 'tableModel')).toBe('Model')
     expect(translate('fr', 'tableTotalCost')).toBe('Coût total')
     expect(translate('en', 'tableTotalCost')).toBe('Total cost')
   })

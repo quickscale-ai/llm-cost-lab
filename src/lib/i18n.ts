@@ -20,7 +20,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
   fr: {
     pageTitle: 'Comparateur de coût par token',
     pageHeading: 'Comparateur LLM',
-    tableModel: 'Modèle',
+    tableModel: 'Nom du modèle',
     tableInput: '$ / M entrée',
     tableOutput: '$ / M sortie',
     tableContext: 'Fenêtre de contexte',
