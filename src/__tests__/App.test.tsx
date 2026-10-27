@@ -613,21 +613,27 @@ describe('export du comparatif en PDF', () => {
 })
 
 describe('pied de page', () => {
-  it('affiche exactement le copyright sur une seule ligne (C1)', () => {
+  it('affiche le copyright et conserve les autres contenus du pied de page (C1, C2)', () => {
     const container = renderApp()
     const footer = container.querySelector('footer')
     const copyright = Array.from(footer?.querySelectorAll('p') ?? []).find(
-      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab — tous droits réservés',
+      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab, par Quickscale',
     )
 
-    expect(copyright?.textContent?.trim()).toBe('© 2026 LLM Cost Lab — tous droits réservés')
+    expect(copyright?.textContent?.trim()).toBe('© 2026 LLM Cost Lab, par Quickscale')
+    expect(footer?.textContent).toContain('7 fournisseurs comparés')
+    expect(footer?.textContent).toContain('Tarifs publics vérifiés le')
+    expect(footer?.textContent).toContain(formatDate(PRICING_VERIFIED_AT))
+    expect(footer?.textContent).toContain('Conversion en francs CFA au taux de')
+    expect(footer?.querySelector('a[href="https://github.com/quickscale-ai/llm-cost-lab"]')?.textContent?.trim()).toBe('GitHub')
+    expect(footer?.querySelector('a[href="#page-top"]')?.textContent?.trim()).toBe('Haut de page')
   })
 
   it('utilise des couleurs lisibles dans les thèmes clair et sombre (C2)', () => {
     const container = renderApp()
     const footer = container.querySelector('footer')
     const copyright = Array.from(footer?.querySelectorAll('p') ?? []).find(
-      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab — tous droits réservés',
+      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab, par Quickscale',
     )
 
     expect(copyright?.className).toContain('text-slate-500')
