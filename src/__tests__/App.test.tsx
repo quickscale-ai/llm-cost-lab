@@ -617,17 +617,17 @@ describe('pied de page', () => {
     const container = renderApp()
     const footer = container.querySelector('footer')
     const copyright = Array.from(footer?.querySelectorAll('p') ?? []).find(
-      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab',
+      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab · Tous droits réservés',
     )
 
-    expect(copyright?.textContent?.trim()).toBe('© 2026 LLM Cost Lab')
+    expect(copyright?.textContent?.trim()).toBe('© 2026 LLM Cost Lab · Tous droits réservés')
   })
 
   it('utilise des couleurs lisibles dans les thèmes clair et sombre (C2)', () => {
     const container = renderApp()
     const footer = container.querySelector('footer')
     const copyright = Array.from(footer?.querySelectorAll('p') ?? []).find(
-      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab',
+      (paragraph) => paragraph.textContent?.trim() === '© 2026 LLM Cost Lab · Tous droits réservés',
     )
 
     expect(copyright?.className).toContain('text-slate-500')
