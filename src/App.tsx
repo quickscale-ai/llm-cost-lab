@@ -14,6 +14,7 @@ import { AgenticSimulator } from './components/AgenticSimulator'
 import { PricingTable } from './components/PricingTable'
 import { BestValueCard } from './components/BestValueCard'
 import { ModelComparison } from './components/ModelComparison'
+import { MonthlyCostChart } from './components/MonthlyCostChart'
 
 type SimMode = 'volume' | 'agentic'
 
@@ -109,7 +110,10 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div
+      id="page-top"
+      className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100"
+    >
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
         <header>
           <p className="text-xs font-semibold tracking-[0.18em] text-brand-600 uppercase dark:text-brand-500">
@@ -209,6 +213,19 @@ export default function App() {
               )}
             </div>
           </div>
+        </section>
+
+        <section
+          aria-labelledby="monthly-cost-chart-heading"
+          className="mt-8 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900"
+        >
+          <h2 id="monthly-cost-chart-heading" className="text-base font-semibold">
+            Coût mensuel par modèle
+          </h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Comparez le coût estimé de chaque modèle affiché pour l&apos;usage simulé.
+          </p>
+          <MonthlyCostChart breakdowns={displayedBreakdowns} currency={currency} />
         </section>
 
         <div className="mt-8">
@@ -319,6 +336,14 @@ export default function App() {
               className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-500"
             >
               Code source sur GitHub
+            </a>
+          </p>
+          <p className="mt-3">
+            <a
+              href="#page-top"
+              className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-500"
+            >
+              Haut de page
             </a>
           </p>
         </footer>

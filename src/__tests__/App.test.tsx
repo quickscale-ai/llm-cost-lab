@@ -8,9 +8,10 @@ import App from '../App'
 import { PricingTable } from '../components/PricingTable'
 import { MODELS } from '../data/models'
 import { CURRENCY_STORAGE_KEY } from '../lib/currencyPreference'
-import { formatCurrency } from '../lib/format'
 import type { CostBreakdown } from '../lib/pricing'
 import { computeCost } from '../lib/pricing'
+import { formatCurrency } from '../lib/format'
+import { MonthlyCostChart } from '../components/MonthlyCostChart'
 
 const printStylesheet = readFileSync('src/index.css', 'utf8')
 
@@ -19,10 +20,14 @@ const printStylesheet = readFileSync('src/index.css', 'utf8')
 let mountedRoot: Root | undefined
 let mountedContainer: HTMLDivElement | undefined
 
+const defaultInnerWidth = window.innerWidth
+
 afterEach(() => {
   if (mountedRoot) act(() => mountedRoot?.unmount())
   mountedContainer?.remove()
+  Object.defineProperty(window, 'innerWidth', { configurable: true, value: defaultInnerWidth })
   window.localStorage.removeItem(CURRENCY_STORAGE_KEY)
+  window.location.hash = ''
   document.title = 'LLM Cost Lab — Comparateur de coût par token'
   vi.restoreAllMocks()
   vi.useRealTimers()
@@ -126,6 +131,7 @@ describe('parcours du comparateur', () => {
 
     expect(Array.from(container.querySelectorAll('h2')).map((heading) => heading.textContent?.trim())).toEqual([
       '1. Configurez votre simulation',
+      'Coût mensuel par modèle',
       '2. Comparez deux modèles',
       '3. Consultez les résultats',
     ])
@@ -215,6 +221,94 @@ function tableRowForModel(container: HTMLDivElement, name: string) {
     row.querySelector('td')?.textContent?.includes(name),
   )
 }
+
+function monthlyChart(container: HTMLDivElement) {
+  const chart = container.querySelector<HTMLElement>('[aria-labelledby="monthly-cost-chart-heading"]')
+  if (!chart) throw new Error('Graphique des coûts introuvable')
+  return chart
+}
+
+describe('graphique des coûts mensuels', () => {
+  it('est placé après le simulateur et affiche une barre par modèle visible (C1, C2)', () => {
+    const container = renderApp()
+    const sections = Array.from(container.querySelectorAll('section')).map((section) => section.getAttribute('aria-labelledby'))
+    const chart = monthlyChart(container)
+
+    expect(sections).toEqual(['simulator-heading', 'monthly-cost-chart-heading', 'comparison-heading', 'results-heading'])
+    expect(chart.querySelector('svg')?.getAttribute('role')).toBe('img')
+    expect(chart.querySelector('svg')?.getAttribute('aria-labelledby')).toBe(
+      'monthly-cost-chart-title monthly-cost-chart-description',
+    )
+    expect(chart.querySelectorAll('[data-model-id]')).toHaveLength(MODELS.length)
+    const usage = { inputTokens: 100_000, outputTokens: 20_000 }
+    for (const model of MODELS) {
+      const group = chart.querySelector(`[data-model-id="${model.id}"]`)
+      const expectedCost = computeCost(model, usage).totalCost
+
+      expect(group).toBeTruthy()
+      expect(group?.querySelector('rect[data-cost]')?.getAttribute('data-cost')).toBe(String(expectedCost))
+      expect(group?.textContent).toContain(formatCurrency(expectedCost, 'USD'))
+    }
+  })
+
+  it('tronque les noms longs sans masquer leur intitulé complet', () => {
+    const baseModel = MODELS[0]
+    if (!baseModel) throw new Error('Modèle de test introuvable')
+    const longName = 'Modèle de langage avec un nom particulièrement long pour mobile'
+    const longModel = { ...baseModel, id: 'long-name-model', name: longName }
+    const breakdown = computeCost(longModel, { inputTokens: 100_000, outputTokens: 20_000 })
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 360 })
+
+    mountedContainer = document.createElement('div')
+    document.body.append(mountedContainer)
+    mountedRoot = createRoot(mountedContainer)
+    act(() => mountedRoot?.render(<MonthlyCostChart breakdowns={[breakdown]} currency="USD" />))
+
+    const group = mountedContainer.querySelector('[data-model-id]')
+    const label = group?.querySelector('text')
+    expect(label?.textContent).toBe('Modèle de langage…')
+    expect(group?.querySelector('title')?.textContent).toContain(longName)
+  })
+
+  it('conserve une taille de texte lisible sur mobile sans élargir le graphique', () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 360 })
+    const container = renderApp()
+    const svg = monthlyChart(container).querySelector('svg')
+
+    expect(svg?.getAttribute('viewBox')).toMatch(/^0 0 360 /)
+    expect(svg?.querySelector('text')?.getAttribute('textLength')).toBeNull()
+    expect(svg?.querySelector('text')?.getAttribute('class')).toContain('text-[14px]')
+  })
+
+  it('suit les filtres, le mode de simulation et la devise (C3, C4)', () => {
+    const container = renderApp()
+    const chart = monthlyChart(container)
+    const initialValues = chart.textContent
+
+    act(() => buttonWithText(container, 'Mistral AI').click())
+    expect(chart.querySelectorAll('[data-model-id]')).toHaveLength(2)
+    changeSearch(container, 'small')
+    expect(chart.querySelectorAll('[data-model-id]')).toHaveLength(1)
+    expect(chart.querySelector('[data-model-id="mistral-small-4"]')).toBeTruthy()
+
+    const volumeValues = chart.textContent
+    act(() => buttonWithText(container, 'Estimation agentic').click())
+    expect(chart.textContent).not.toBe(volumeValues)
+    expect(chart.textContent).not.toBe(initialValues)
+    const agenticValues = chart.textContent
+    const displayedModel = MODELS.find((model) => model.id === 'mistral-small-4')
+    if (!displayedModel) throw new Error('Modèle affiché introuvable')
+    const agenticCost = computeCost(displayedModel, {
+      inputTokens: 50 * 10 * 8_000,
+      outputTokens: 50 * 10 * 1_500,
+    }).totalCost
+
+    act(() => buttonWithText(container, 'FCFA').click())
+    expect(chart.textContent).not.toBe(agenticValues)
+    expect(chart.textContent).toContain(formatCurrency(agenticCost, 'XOF'))
+    expect(chart.querySelector('svg')?.getAttribute('aria-labelledby')).toBeTruthy()
+  })
+})
 
 describe('recherche de modèle dans l’application', () => {
   it('affiche tous les modèles au rendu initial (C1, C3)', () => {
@@ -362,5 +456,25 @@ describe('export du comparatif en PDF', () => {
     act(() => button.click())
 
     expect(print).toHaveBeenCalledOnce()
+  })
+})
+
+describe('lien de retour en haut de page', () => {
+  it('affiche dans le pied de page un lien accessible qui ramène à l’ancre supérieure (C1, C2)', () => {
+    const container = renderApp()
+    const pageTop = container.querySelector<HTMLElement>('#page-top')
+    const footer = container.querySelector('footer')
+    const link = footer?.querySelector<HTMLAnchorElement>('a[href="#page-top"]')
+
+    expect(pageTop).toBeTruthy()
+    expect(link).toBeTruthy()
+    expect(link?.textContent?.trim()).toBe('Haut de page')
+    expect(link?.tagName).toBe('A')
+    expect(link?.getAttribute('href')).toBe('#page-top')
+    expect(link?.tabIndex).toBe(0)
+
+    act(() => link?.click())
+
+    expect(window.location.hash).toBe('#page-top')
   })
 })
