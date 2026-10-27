@@ -19,7 +19,7 @@ export type TranslationKey =
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   fr: {
     pageTitle: 'Comparateur de coût par token',
-    pageHeading: 'Comparateur de prix des LLM',
+    pageHeading: 'Comparateur des prix des modèles de langage',
     tableModel: 'Modèle',
     tableInput: '$ / M entrée',
     tableOutput: '$ / M sortie',
