@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   convert,
   formatCurrency,
+  formatCurrencyMTok,
   formatTokens,
   formatContextWindow,
   formatDate,
@@ -71,6 +72,37 @@ describe('formatCurrency', () => {
   it('gère le zéro', () => {
     expect(normalize(formatCurrency(0, 'USD'))).toBe('0 $US')
   })
+})
+
+describe('formatCurrencyMTok', () => {
+  // C1 : exactement 2 décimales pour les prix par million de jetons
+  it('affiche exactement 2 décimales pour un prix courant (C1)', () => {
+    expect(normalize(formatCurrencyMTok(0.6, 'USD'))).toBe('0,60 $US')
+    expect(normalize(formatCurrencyMTok(1.5, 'USD'))).toBe('1,50 $US')
+  })
+
+  it('arrondit à 2 décimales pour un très petit prix USD (C1)', () => {
+    expect(normalize(formatCurrencyMTok(0.0015, 'USD'))).toBe('0,00 $US')
+  })
+
+  it('affiche exactement 2 décimales en euros (C1)', () => {
+    expect(normalize(formatCurrencyMTok(0.6, 'EUR'))).toMatch(/,\d{2}\s*€$/)
+    expect(normalize(formatCurrencyMTok(1.5, 'EUR'))).toMatch(/,\d{2}\s*€$/)
+  })
+
+  it('affiche exactement 2 décimales en francs CFA (C1)', () => {
+    const result = normalize(formatCurrencyMTok(0.001, 'XOF'))
+    // La valeur convertie est petite, 2 décimales attendues
+    expect(result).toMatch(/,\d{2}\s*F\s*CFA$/)
+  })
+
+  it('affiche un tiret pour les valeurs non finies (C1)', () => {
+    expect(formatCurrencyMTok(NaN, 'USD')).toBe('—')
+    expect(formatCurrencyMTok(Infinity, 'EUR')).toBe('—')
+  })
+
+  // C2 : les tests de formatCurrency (colonnes Coût total / Coût par tâche)
+  // ne sont pas modifiés — voir describe('formatCurrency') ci-dessous.
 })
 
 describe('formatTokens', () => {

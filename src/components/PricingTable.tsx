@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { CostBreakdown } from '../lib/pricing'
 import { maxTotalCost, costPerTask } from '../lib/pricing'
 import type { Currency } from '../lib/format'
-import { formatContextWindow, formatCurrency } from '../lib/format'
+import { formatContextWindow, formatCurrency, formatCurrencyMTok } from '../lib/format'
 import type { Language } from '../lib/i18n'
 import { translate } from '../lib/i18n'
 
@@ -197,10 +197,10 @@ export function PricingTable({
                   </a>
                 </td>
                 <td className="tabular py-2.5 text-right text-slate-600 dark:text-slate-400">
-                  {formatCurrency(model.inputPerMTok, currency)}
+                  {formatCurrencyMTok(model.inputPerMTok, currency)}
                 </td>
                 <td className="tabular py-2.5 text-right text-slate-600 dark:text-slate-400">
-                  {formatCurrency(model.outputPerMTok, currency)}
+                  {formatCurrencyMTok(model.outputPerMTok, currency)}
                 </td>
                 <td className="tabular py-2.5 text-right text-slate-600 dark:text-slate-400">
                   {formatContextWindow(model.contextWindow)}
@@ -257,13 +257,13 @@ export function PricingTable({
                 <div className="flex gap-1">
                   <dt>{translate(language, 'mobileInput')}</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
-                    {formatCurrency(model.inputPerMTok, currency)}/M
+                    {formatCurrencyMTok(model.inputPerMTok, currency)}/M
                   </dd>
                 </div>
                 <div className="flex gap-1">
                   <dt>{translate(language, 'mobileOutput')}</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
-                    {formatCurrency(model.outputPerMTok, currency)}/M
+                    {formatCurrencyMTok(model.outputPerMTok, currency)}/M
                   </dd>
                 </div>
                 <div className="flex gap-1">

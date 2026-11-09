@@ -62,6 +62,27 @@ export function formatCurrency(amountUsd: number, currency: Currency): string {
   }).format(value)
 }
 
+/**
+ * Formate un prix par million de jetons (colonnes Entrée / Sortie du tableau).
+ *
+ * Affiche exactement 2 décimales quelle que soit la devise, conformément
+ * au critère C1 (arrondi des prix). Ne remplace pas formatCurrency pour
+ * les autres colonnes (Coût total, Coût par tâche).
+ */
+export function formatCurrencyMTok(amountUsd: number, currency: Currency): string {
+  if (!Number.isFinite(amountUsd)) return '—'
+
+  const value = convert(amountUsd, currency)
+  if (!Number.isFinite(value)) return '—'
+
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
 /** Formate un nombre de tokens avec les séparateurs de milliers français. */
 export function formatTokens(tokens: number): string {
   if (!Number.isFinite(tokens)) return '—'
