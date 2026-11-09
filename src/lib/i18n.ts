@@ -24,7 +24,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     tableInput: '$ / M entrée',
     tableOutput: '$ / M sortie',
     tableContext: 'Fenêtre de contexte',
-    tableTotalCost: 'Coût total',
+    tableTotalCost: 'Coût total estimé',
     tableCostPerTask: 'Coût / tâche',
     mobileInput: 'Entrée',
     mobileOutput: 'Sortie',
