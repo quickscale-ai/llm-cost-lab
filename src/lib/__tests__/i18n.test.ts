@@ -6,7 +6,7 @@ describe('traductions de l’interface', () => {
     expect(SUPPORTED_LANGUAGES).toEqual(['fr', 'en'])
     expect(translations.fr.pageTitle).toBe('Comparateur de coût par token')
     expect(translations.en.pageTitle).toBe('Token Cost Comparator')
-    expect(translations.fr.pageHeading).toBe('Comparateur LLM')
+    expect(translations.fr.pageHeading).toBe('Comparateur de LLM')
     expect(translations.en.pageHeading).toBe('Token Cost Comparator')
     expect(translate('fr', 'tableModel')).toBe("Modèle d'IA")
     expect(translate('en', 'tableModel')).toBe('Model')
